@@ -1,7 +1,7 @@
 PWD			:= $(shell pwd)
 WORK_DIR	:= /var/tmp/beat
 
-CMake = mkdir -p $(1); cd $(1); cmake $(PWD) -G 'CodeBlocks - Unix Makefiles'  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -Dwithout-unittest=YES;
+CMake = mkdir -p $(1); cd $(1); cmake $(PWD) -G 'CodeBlocks - Unix Makefiles'  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -Dwithout-unittest=YES -DSSE=2;
 Make = cd $(1); make -j$(2);
 Clean = cd $(1); make clean;
 all: /var/tmp/beat/Makefile
