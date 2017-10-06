@@ -8,6 +8,8 @@ all: /var/tmp/beat/Makefile
 	$(call Make, $(WORK_DIR), 5)
 /var/tmp/beat/Makefile:
 	$(call CMake, $(WORK_DIR))
+cmake:
+	$(call CMake, $(WORK_DIR))
 clean:
 	$(call Clean, $(WORK_DIR))
 tags:
