@@ -1,4 +1,7 @@
-*~
-*.cbp
 .clang
-CMakeLists.txt.user*
+*.cbp
+*.user*
+__pycache__
+*.pyc
+*.kdev4
+*~
