@@ -13,7 +13,7 @@ namespace beat {
 		}
 		bool Pose::_refresh(ToWorld::value_t& dst, ToWorld*) const {
 			dst = AMat3::Scaling(getScaling().convert<3>());
-			dst *= frea::AMat2::Rotation(getRotation()).convertI<3,3,2>(1);
+			dst *= frea::AMat2::Rotation(getRotation()).convertI<3,3>(1);
 			dst.setRow<2>(getOffset().convertI<3,2>(1));
 			return true;
 		}

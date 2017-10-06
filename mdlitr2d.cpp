@@ -1,4 +1,4 @@
-#include "tfnode_base.hpp"
+#include "tfnode_base2d.hpp"
 
 namespace beat {
 	namespace g2 {

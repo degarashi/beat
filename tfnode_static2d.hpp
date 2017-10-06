@@ -1,34 +1,37 @@
 #pragma once
-#include "tfnode_base.hpp"
+#include "tfnode_base2d.hpp"
 
 namespace beat {
 	namespace g2 {
+		//! フレーム経過で内部構造が変化しないノード(ユーザーが自分でフラグをセットする)
 		template <class Boundary, class Ud=spi::none_t>
-		class TfNode_Dynamic : public TfNode_base<Boundary, Ud> {
+		class TfNode_Static : public TfNode_base<Boundary, Ud> {
 			private:
 				using base_t = TfNode_base<Boundary, Ud>;
 				using SP = typename base_t::SP;
-				using Time_OP = spi::Optional<Time_t>;
-				mutable Time_OP		_opTime = 0;
-				mutable bool		_bValid;
+				mutable bool	_bChanged = true,
+								_bValid;
 			protected:
 				static void OnChildAdded(typename base_t::pointer* self, const SP& /*node*/) {
-					static_cast<TfNode_Dynamic*>(self)->_opTime = spi::none;
+					static_cast<TfNode_Static*>(self)->_setAsChanged();
 				}
 				static void OnChildRemove(typename base_t::pointer* self, const SP& /*node*/) {
-					static_cast<TfNode_Dynamic*>(self)->_opTime = spi::none;
+					static_cast<TfNode_Static*>(self)->_setAsChanged();
 				}
 			public:
-				SP clone() const override {
-					return std::make_shared<TfNode_Dynamic>(*this);
+				void tf_setAsChanged() override {
+					_bChanged = true;
+					base_t::tf_setAsChanged();
 				}
-				bool imn_refresh(Time_t t) const override {
-					// 更新時刻が古い時のみ処理を行う
-					if(!_opTime || *_opTime < t) {
-						_opTime = t;
-
+				Model_SP im_clone() const override {
+					return std::make_shared<TfNode_Static>(*this);
+				}
+				bool im_refresh(Time_t t) const override {
+					// 更新条件はフラグ
+					if(_bChanged) {
+						_bChanged = false;
 						std::vector<const IModel*> pm;
-						// 子ノードをリストアップ
+						// 直下の子ノードをリストアップ
 						this->template iterateDepthFirst<false>([&pm](auto& node, int depth){
 							if(depth == 0)
 								return spi::Iterate::StepIn;
@@ -37,9 +40,9 @@ namespace beat {
 						});
 						if((_bValid = !pm.empty())) {
 							// 境界ボリュームの更新
-							auto* core = const_cast<Boundary*>(reinterpret_cast<const Boundary*>(base_t::getCore()));
+							auto* core = const_cast<Boundary*>(reinterpret_cast<const Boundary*>(base_t::im_getCore()));
 							auto op = MakeBoundary<Boundary>(&pm[0], pm.size(), t);
-							if((_bValid = op))
+							if((_bValid = static_cast<bool>(op)))
 								*core = *op;
 						}
 						// 子ノードが無い場合は常にヒットしない

@@ -27,14 +27,12 @@ namespace beat {
 				friend class spi::TreeNode<ITf>;
 
 			protected:
-				void* _getUserData(void*, std::true_type) const;
-				void* _getUserData(void* udata, std::false_type) const;
-				virtual void _setAsChanged();
+				void* _getUserData(const void*, std::true_type) const;
+				void* _getUserData(const void* udata, std::false_type) const;
 
 			public:
 				//! 子ノードの取得
 				MdlItr im_getInner() const override;
-				bool im_hasInner() const override;
 				//! 下層オブジェクトの形状を変更した時に手動で呼ぶ
 				virtual void tf_setAsChanged();
 				virtual Pose& tf_refPose[[noreturn]]();
@@ -51,7 +49,10 @@ namespace beat {
 				using model_t::model_t;
 				/*! ユーザーデータがvoidの時は親ノードのデータを返す */
 				void* im_getUserData() const override {
-					return _getUserData(&_udata, std::is_same<spi::none_t, Ud>());
+					return ITf::_getUserData(&_udata, std::false_type());//lubee::BConst<std::is_same<spi::none_t, Ud>{}>());
+				}
+				bool im_isLeaf() const override {
+					return false;
 				}
 		};
 	}

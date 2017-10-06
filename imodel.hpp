@@ -32,11 +32,11 @@ namespace beat {
 		virtual bool im_refresh(Time_t /*t*/) const override {
 			return true;
 		}
-		virtual bool im_hasInner() const override {
-			return false;
-		}
 		virtual bool im_canCacheShape() const override {
 			return true;
+		}
+		bool im_isLeaf() const override {
+			return false;
 		}
 		//! モデルの実体へのポインタ
 		void* im_getCore() override {

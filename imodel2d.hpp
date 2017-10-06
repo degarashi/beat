@@ -6,6 +6,9 @@
 #include "boundary.hpp"
 
 namespace beat {
+	template <class Types>
+	class Narrow;
+
 	namespace g2 {
 		struct Point;
 		struct Line;
@@ -34,8 +37,9 @@ namespace beat {
 			virtual void im_getBVolume(Circle& c) const = 0;
 			virtual void im_getBVolume(AABB& a) const = 0;
 			virtual void* im_getCore() = 0;
+			virtual bool im_isLeaf() const = 0;
 			virtual const void* im_getCore() const = 0;
-			virtual bool im_refresh(Time_t t) const = 0;
+			virtual bool im_refresh(Time_t t) const;
 			virtual bool im_canCacheShape() const = 0;
 			virtual void* im_getUserData() const = 0;
 			//! サポート射像
@@ -46,19 +50,17 @@ namespace beat {
 			virtual bool im_hit(const Vec2& p) const = 0;
 			virtual uint32_t im_getCID() const = 0;
 			virtual Model_SP im_clone() const = 0;
-			virtual Vec2 im_toLocal(const Vec2& v) const { return v; }
-			virtual Vec2 im_toLocalDir(const Vec2& v) const { return v; }
-			virtual Vec2 im_toWorld(const Vec2& v) const { return v; }
-			virtual Vec2 im_toWorldDir(const Vec2& v) const { return v; }
-			virtual spi::Optional<const AMat32&> im_getToLocal() const { return spi::none; }
-			virtual spi::Optional<const AMat32&> im_getToWorld() const { return spi::none; }
+			virtual Vec2 im_toLocal(const Vec2& v) const;
+			virtual Vec2 im_toLocalDir(const Vec2& v) const;
+			virtual Vec2 im_toWorld(const Vec2& v) const;
+			virtual Vec2 im_toWorldDir(const Vec2& v) const;
+			virtual const AMat32& im_getToLocal() const;
+			virtual const AMat32& im_getToWorld() const;
 			const static AMat32 cs_idMat;
-			const AMat32& im_getToLocalI() const;
-			const AMat32& im_getToWorldI() const;
 			virtual MdlItr im_getInner() const;
-			virtual bool im_hasInner() const;
+			bool im_hasInner() const;
 
-			virtual void im_transform[[noreturn]](void* dst, const AMat32& m) const = 0;
+			virtual void im_transform(void* dst, const AMat32& m) const = 0;
 			virtual std::ostream& im_print(std::ostream& os) const = 0;
 		};
 
@@ -108,5 +110,13 @@ namespace beat {
 		std::ostream& operator << (std::ostream& os, const Model<T>& m) {
 			return m.print(os);
 		}
+
+		class GSimplex;
+		struct Types {
+			using CTGeo = CTGeo;
+			using IModel = IModel;
+			using GJK = GSimplex;
+			using Narrow = ::beat::Narrow<Types>;
+		};
 	}
 }
