@@ -86,7 +86,7 @@ namespace beat {
 					return _getUserData(&_udata, std::is_same<spi::none_t, Ud>());
 				}
 				bool im_canCacheShape() const override {
-					return true;
+					return false;
 				}
 				Model_SP im_clone() const override {
 					return std::make_shared<TfLeaf>(*this);

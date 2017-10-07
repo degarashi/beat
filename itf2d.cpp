@@ -23,5 +23,8 @@ namespace beat {
 		const Pose& ITf::tf_getPose() const {
 			return const_cast<ITf*>(this)->tf_getPose();
 		}
+		Model_SP ITf::clone() const {
+			return im_clone();
+		}
 	}
 }

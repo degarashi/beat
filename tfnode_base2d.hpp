@@ -37,6 +37,7 @@ namespace beat {
 				virtual void tf_setAsChanged();
 				virtual Pose& tf_refPose[[noreturn]]();
 				virtual const Pose& tf_getPose() const;
+				Model_SP clone() const;
 		};
 		template <class Boundary, class Ud>
 		class TfNode_base : public ITf,
