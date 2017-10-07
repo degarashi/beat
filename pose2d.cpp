@@ -12,13 +12,14 @@ namespace beat {
 			return true;
 		}
 		bool Pose::_refresh(ToWorld::value_t& dst, ToWorld*) const {
-			dst = AMat3::Scaling(getScaling().convert<3>());
-			dst *= frea::AMat2::Rotation(getRotation()).convertI<3,3>(1);
-			dst.setRow<2>(getOffset().convertI<3,2>(1));
+			auto tmp = frea::AMat3::Scaling(getScaling().convert<3>());
+			tmp *= frea::AMat2::Rotation(getRotation()).convertI<3,3>(1);
+			tmp.setRow<2>(getOffset().convertI<3,2>(1));
+			dst = tmp.convert<3,2>();
 			return true;
 		}
 		bool Pose::_refresh(ToLocal::value_t& dst, ToLocal*) const {
-			dst = getToWorld().inversion();
+			dst = (getToWorld().convertI<3,3>(1).inversion()).convert<3,2>();
 			return true;
 		}
 		Pose::Pose(const Vec2& pos, const RadF ang, const Vec2& sc) {

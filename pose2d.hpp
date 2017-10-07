@@ -12,15 +12,15 @@ namespace beat {
 			private:
 				using Vec2 = frea::Vec2;
 				using AVec2 = frea::AVec2;
-				using AMat3 = frea::AMat3;
+				using AMat32 = frea::Mat_t<float, 3, 2, true>;
 				using RadF = frea::RadF;
 				#define SEQ \
 					((Offset)(AVec2)) \
 					((Rotation)(RadF)) \
 					((Scaling)(AVec2)) \
 					((Accum)(uint32_t)(Offset)(Rotation)(Scaling)) \
-					((ToWorld)(AMat3)(Offset)(Rotation)(Scaling)) \
-					((ToLocal)(AMat3)(ToWorld))
+					((ToWorld)(AMat32)(Offset)(Rotation)(Scaling)) \
+					((ToLocal)(AMat32)(ToWorld))
 				RFLAG_DEFINE(Pose, SEQ)
 
 				template <class Ar>
