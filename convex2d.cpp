@@ -99,12 +99,13 @@ namespace beat {
 			// 全ての3点の組み合わせを調べる
 			constexpr float fmin = std::numeric_limits<float>::lowest();
 			constexpr float fmax = std::numeric_limits<float>::max();
-			AABBM ab(Vec2(fmin, fmin),
-					Vec2(fmax, fmax));
+			Vec2 vmin(fmax),
+				 vmax(fmin);
 			for(auto& p : point) {
-				ab.min.selectMin(p);
-				ab.max.selectMax(p);
+				vmin.selectMin(p);
+				vmax.selectMax(p);
 			}
+			AABBM ab(vmin, vmax);
 			Circle c;
 			c.setBoundary(&ab);
 			return c;
