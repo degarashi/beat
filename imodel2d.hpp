@@ -111,10 +111,12 @@ namespace beat {
 			return m.print(os);
 		}
 
+		class ITf;
 		class GSimplex;
 		struct Types {
 			using CTGeo = CTGeo;
 			using IModel = IModel;
+			using ITf = ITf;
 			using GJK = GSimplex;
 			using Narrow = ::beat::Narrow<Types>;
 		};
