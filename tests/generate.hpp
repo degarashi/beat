@@ -73,10 +73,10 @@ namespace beat {
 				}
 				Triangle genTriangleArea() {
 					return random::GenTriangleArea(_rp, 1e-1f);
-				}	
+				}
 				Triangle genTriangle() {
 					return random::GenTriangle(_rp);
-				}	
+				}
 				Convex genConvex(int n=-1) {
 					auto& mt = this->mt();
 					if(n < 0) {
