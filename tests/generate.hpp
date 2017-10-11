@@ -37,15 +37,15 @@ namespace beat {
 					_rcirr(mt().getUniformF<float>(RangeF{0, 1e1f})),
 					_rcapr(mt().getUniformF<float>(RangeF{0, 1e1f}))
 				{}
-				void genShape(PointM& dst) { dst = genPoint(); }
-				void genShape(SegmentM& dst) { dst = genSegment(); }
-				void genShape(LineM& dst) { dst = genLine(); }
-				void genShape(RayM& dst) { dst = genRay(); }
-				void genShape(AABBM& dst) { dst = genAABB(); }
-				void genShape(TriangleM& dst) { dst = genTriangleArea(); }
-				void genShape(CapsuleM& dst) { dst = genCapsule(); }
-				void genShape(CircleM& dst) { dst = genCircle(); }
-				void genShape(ConvexM& dst) { dst = genConvex(); }
+				void genShape(Point& dst) { dst = genPoint(); }
+				void genShape(Segment& dst) { dst = genSegment(); }
+				void genShape(Line& dst) { dst = genLine(); }
+				void genShape(Ray& dst) { dst = genRay(); }
+				void genShape(AABB& dst) { dst = genAABB(); }
+				void genShape(Triangle& dst) { dst = genTriangleArea(); }
+				void genShape(Capsule& dst) { dst = genCapsule(); }
+				void genShape(Circle& dst) { dst = genCircle(); }
+				void genShape(Convex& dst) { dst = genConvex(); }
 
 				Point genPoint() {
 					return random::GenPoint(_rp);

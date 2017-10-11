@@ -58,7 +58,7 @@ namespace beat {
 					AssertF("unknown collision-id");
 				}
 				template <class T, class D=decltype(std::declval<T>().get())>
-				static auto CollectLeaf(T& spRoot, D=nullptr) {
+				static auto CollectLeaf(const T& spRoot, D=nullptr) {
 					std::vector<D> v;
 					spRoot->template iterateDepthFirst<false>([&v](auto& node, int /*depth*/){
 						if(node.im_isLeaf())
