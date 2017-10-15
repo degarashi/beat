@@ -12,13 +12,15 @@
 
 namespace beat {
 	namespace g2 {
+		using lubee::RangeI;
 		using lubee::RangeF;
 		class Generator : public lubee::test::Random {
 			private:
-				using RInt = std::function<int (const RangeF&)>;
+				using RInt = decltype(std::declval<lubee::test::Random>().mt().getUniformF<int>());
 				RInt	_ri;
 				using RFloat = decltype(std::declval<lubee::test::Random>().mt().getUniformF<float>());
-				RFloat	_rp,
+				RFloat	_rf,
+						_rp,
 						_rcirr,
 						_rcapr;
 			public:
@@ -33,6 +35,7 @@ namespace beat {
 				}
 				Generator():
 					_ri(mt().getUniformF<int>()),
+					_rf(mt().getUniformF<float>()),
 					_rp(mt().getUniformF<float>(RangeF{1e2f})),
 					_rcirr(mt().getUniformF<float>(RangeF{0, 1e1f})),
 					_rcapr(mt().getUniformF<float>(RangeF{0, 1e1f}))
@@ -84,8 +87,11 @@ namespace beat {
 					}
 					return random::GenConvexArea(_rp, n, 1e-1f);
 				}
-				int genInt(const RangeF& r) {
+				int genInt(const RangeI& r) {
 					return _ri(r);
+				}
+				float genFloat(const RangeF& r) {
+					return _rf(r);
 				}
 		};
 	}
