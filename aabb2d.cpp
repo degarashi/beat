@@ -134,6 +134,13 @@ namespace beat {
 			}
 			return ret;
 		}
+		bool AABB::operator == (const AABB& a) const {
+			return min == a.min
+				&& max == a.max;
+		}
+		bool AABB::operator != (const AABB& a) const {
+			return !(this->operator == (a));
+		}
 		std::ostream& operator << (std::ostream& os, const AABB& a) {
 			return os << "AABB(2d) [ min: " << a.min << ", max: " << a.max << ']';
 		}

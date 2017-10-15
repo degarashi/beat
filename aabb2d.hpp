@@ -45,6 +45,8 @@ namespace beat {
 				Vec2 support(const Vec2& dir) const;
 				AABB& operator += (const Vec2& ofs);
 				AABB operator * (const AMat32& m) const;
+				bool operator == (const AABB& a) const;
+				bool operator != (const AABB& a) const;
 				friend std::ostream& operator << (std::ostream& os, const AABB& a);
 				// ----------------------------------------
 
