@@ -9,9 +9,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb3 -std=c++14 -Wall -Wextra -ftemp
 add_definitions(-DSSE=${SSE})
 include_directories(.)
 # デバッグビルドの際はGLibのデバッグモードをONにする
-# if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	# add_definitions(-D_GLIBCXX_DEBUG)
-# endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_definitions(-D_GLIBCXX_DEBUG)
+endif()
 aux_source_directory(. LIBSRC_FILE)
 add_library(beat SHARED ${LIBSRC_FILE})
 set_target_properties(beat PROPERTIES VERSION 0.0.1 SOVERSION 0)
