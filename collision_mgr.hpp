@@ -162,16 +162,7 @@ namespace beat {
 		\tparam UD		userdata type
 	*/
 	template <class BC, class Types, class UD>
-	class ColMgr : public spi::ResMgr<
-								ColMem<
-									ColMgr<BC,Types,UD>,
-									typename Types::ITf,
-									typename BC::IDType,
-									UD
-								>
-							>,
-					public spi::Singleton<ColMgr<BC,Types,UD>>
-	{
+	class ColMgr : public spi::Singleton<ColMgr<BC,Types,UD>> {
 		public:
 			using user_t = UD;														//!< Userdata
 			using broad_t = BC;														//!< BroadCollision class
@@ -185,8 +176,7 @@ namespace beat {
 			using CMem = ColMem<this_t, ITf, BCId, user_t>;				//!< Collision information structure
 			using HCol = std::shared_ptr<CMem>;
 			using WCol = std::weak_ptr<CMem>;
-
-			using base_t = spi::ResMgr<CMem>;
+			using resmgr_t = spi::ResMgr<CMem>;
 
 			// 単方向リスト
 			struct Hist {
@@ -207,6 +197,7 @@ namespace beat {
 			using Hist_OP = spi::Optional<const Hist&>;
 
 			broad_t		_broad;
+			resmgr_t	_resmgr;
 			Time_t		_time = 0;
 			//! history, removelistの現在のインデックス
 			int			_swHist = 0;
@@ -300,11 +291,12 @@ namespace beat {
 			/*! \param mask[in] 当たり判定マスク */
 			template <class UD2>
 			HCol addCol(const CMask mask, const Mdl_SP& spMdl, UD2&& ud=user_t()) {
-				HCol hlC = base_t::emplace(mask, spMdl, std::forward<UD2>(ud));
+				HCol hlC = _resmgr.emplace(mask, spMdl, std::forward<UD2>(ud));
 				hlC->setBCID(_broad.add(hlC.get(), mask));
 				D_Assert(spMdl->im_refresh(_time), "empty object detected");
 				return hlC;
 			}
+			// from CMem
 			void deleteBCID(const BCId id) noexcept {
 				_broad.rem(id);
 			}
