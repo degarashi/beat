@@ -3,17 +3,22 @@
 #include "tree_generate.hpp"
 #include "../narrow.hpp"
 #include "lubee/tuplehash.hpp"
+#include "broad_collision/dualntree.hpp"
+#include "broad_collision/ntree/dim2.hpp"
+#include "broad_collision/ntree/arraymapper.hpp"
+#include "broad_collision/ntree/hashmapper.hpp"
 
 namespace beat {
 	namespace g2 {
+		template <class BroadT>
 		struct BroadCollision : TreeGenerator {
 			using user_t = uint32_t;
-			using volume_t = Circle;
-			using colmgr_t = ColMgr<RoundRobin<volume_t>, Types, user_t>;
+			using broad_t = BroadT;
+			using colmgr_t = ColMgr<broad_t, Types, user_t>;
 			using narrow_t = Types::Narrow;
-			constexpr static int ObjIter = 4,
-								ObjDepth = 1;
-			using ObjNodeT = lubee::Types<Circle, AABB>;
+			constexpr static int ObjIter = 12,
+								ObjDepth = 2;
+			using ObjNodeT = lubee::Types<AABB>;
 			using ObjLeafT = ObjNodeT;
 
 			auto makeRandomTree() {
@@ -21,7 +26,7 @@ namespace beat {
 			}
 			//! ランダムな階層構造の形状定義
 			auto makeRandomColTree(colmgr_t& dst, const int n, const CMask mask, user_t ud) {
-				std::vector<colmgr_t::HCol> ret(n);
+				std::vector<typename colmgr_t::HCol> ret(n);
 				for(int i=0 ; i<n ; i++) {
 					const auto sp = makeRandomTree();
 					ret[i] = dst.addCol(mask, sp, ud++);
@@ -49,6 +54,13 @@ namespace beat {
 				}
 			}
 		};
+		using BTypes = ::testing::Types<
+			RoundRobin<Circle>,
+			RoundRobin<AABB>,
+			ntree::DualNTree<ntree::g2::Dim, ntree::ArrayMapper, 5>,
+			ntree::DualNTree<ntree::g2::Dim, ntree::HashMapper, 5>
+		>;
+		TYPED_TEST_CASE(BroadCollision, BTypes);
 
 		namespace {
 			constexpr int MaxObj = 32,
@@ -58,16 +70,23 @@ namespace beat {
 						IdB = 0x80000001;
 		}
 		// 単体 -> 複数のテスト
-		TEST_F(BroadCollision, Single) {
-			colmgr_t cm(256, 0);
+		TYPED_TEST(BroadCollision, Single) {
+			USING(colmgr_t);
+			USING(user_t);
+			USING(narrow_t);
+
+			colmgr_t cm(
+				this->genFloat({1.f, 1024.f}),
+				this->genFloat(RangeF{1024.f})
+			);
 			// TypeAを適当に追加
 			// (MSBが0ならTypeA, 目印としてUserData=0x0000)
-			const auto vA = makeRandomColTree(cm, genInt({0, MaxObj}), IdA, IdOffsetA);
+			const auto vA = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
 			// TypeBも適当に追加
 			// (MSBが1ならTypeB 目印としてUserData=0x1000)
-			const auto vB = makeRandomColTree(cm, genInt({0, MaxObj}), IdB, IdOffsetB);
+			const auto vB = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
 
-			const auto spMdl = makeRandomTree();
+			const auto spMdl = this->makeRandomTree();
 			// -> TypeA and TypeBと判定
 			using Set = std::unordered_set<user_t>;
 			Set bcAB,
@@ -99,15 +118,21 @@ namespace beat {
 		}
 
 		// 複数 -> 複数のテスト
-		TEST_F(BroadCollision, Multi) {
-			colmgr_t cm(256, 0);
-			const auto v0 = makeRandomColTree(cm, genInt({0, MaxObj}), IdA, IdOffsetA);
-			const auto v1 = makeRandomColTree(cm, genInt({0, MaxObj}), IdB, IdOffsetB);
+		TYPED_TEST(BroadCollision, Multi) {
+			USING(colmgr_t);
+			USING(narrow_t);
+
+			colmgr_t cm(
+				128.f,//float(genInt({1, 1024})),
+				0.f//float(genInt(RangeI{1024}))
+			);
+			const auto v0 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
+			const auto v1 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
 			using LeafPV = std::vector<TfLeaf_base*>;
 			LeafPV	leaf0, leaf1;
 			{
 				const auto collectLeafObj = [](LeafPV& dst, const Tf_SP& mdl){
-					const auto leaf = CollectLeaf(mdl);
+					const auto leaf = TestFixture::CollectLeaf(mdl);
 					const int nl = leaf.size(),
 						  prev = dst.size();
 					dst.resize(prev + nl);
@@ -123,17 +148,19 @@ namespace beat {
 					collectLeafObj(leaf1, v->getModel());
 			}
 
-			using HCol = colmgr_t::HCol;
+			using HCol = typename colmgr_t::HCol;
 			// CollisionManagerを使わずに判定した結果の格納
 			const auto checkDIY = [](auto& ftCur, const auto& ftPrev, auto& ch, const HCol& hc0, const HCol& hc1, const Time_t t){
 				const uint32_t id0 = hc0->getUserData(),
 								id1 = hc1->getUserData();
 				const uint32_t idp0 = (id0 << 16) | id1,
 								idp1 = (id1 << 16) | id0;
-				auto idpair = std::make_tuple(id0,id1);
-				auto itr = ftPrev.find(idpair);
+				const auto idpair = std::make_tuple(id0,id1);
+				const auto itr = ftPrev.find(idpair);
 				ASSERT_EQ(ftCur.count(idpair), 0);
-				if(narrow_t::Hit(hc0->getModel().get(), hc1->getModel().get(), t)) {
+				const auto bv0 = hc0->template getBVolume<typename colmgr_t::BVolume>(t),
+						  bv1 = hc1->template getBVolume<typename colmgr_t::BVolume>(t);
+				if(bv0.hit(bv1) && narrow_t::Hit(hc0->getModel().get(), hc1->getModel().get(), t)) {
 					int count = 0;
 					if(itr != ftPrev.end()) {
 						// 衝突カウンタ値の更新
@@ -178,14 +205,14 @@ namespace beat {
 					});
 					obj->getEndCollision([&ch, id](const auto& hist){
 						const auto id2 = id | hist.hCol->getUserData();
-						ASSERT_EQ(ch.count(id2), 0);
+						ASSERT_EQ(0, ch.count(id2));
 						ch[id2] = -1;
 					});
 				}
 			};
 
 			// 形状の変数値をシャッフルしながら何回か比較
-			int nShuffle = genInt({1,16});
+			int nShuffle = this->genInt({8, 32});
 			const int nA = v0.size(),
 						nB = v1.size();
 			while(nShuffle-- > 0) {
@@ -227,9 +254,9 @@ namespace beat {
 				}
 
 				for(auto* p : leaf0)
-					moveShape(p);
+					this->moveShape(p);
 				for(auto* p : leaf1)
-					moveShape(p);
+					this->moveShape(p);
 			}
 		}
 	}

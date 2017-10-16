@@ -3,6 +3,7 @@
 #include "../g2objects.hpp"
 #include "../tfnode_static2d.hpp"
 #include "../tfleaf2d.hpp"
+#include "../tfleaf_cached.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -23,7 +24,7 @@ namespace beat {
 			public:
 				template <class T>
 				Tf_SP makeAsLeaf(T&& src) {
-					return std::make_shared<TfLeaf<>>(
+					return std::make_shared<TfLeafCached<T>>(
 						std::make_shared<Model<T>>(
 							std::forward<T>(src)
 						)
