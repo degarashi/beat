@@ -123,8 +123,8 @@ namespace beat {
 			USING(narrow_t);
 
 			colmgr_t cm(
-				128.f,//float(genInt({1, 1024})),
-				0.f//float(genInt(RangeI{1024}))
+				float(this->genInt({1, 1024})),
+				float(this->genInt(RangeI{1024}))
 			);
 			const auto v0 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
 			const auto v1 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
@@ -216,7 +216,7 @@ namespace beat {
 			const int nA = v0.size(),
 						nB = v1.size();
 			while(nShuffle-- > 0) {
-				// RoundRobinによる判定
+				// 当たり判定クラスによる判定
 				cm.update();
 				chmap[0].clear();
 				histToMap(chmap[0], v0);
