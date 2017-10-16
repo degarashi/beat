@@ -116,29 +116,24 @@ namespace beat {
 			Circle c2;
 			p->im_getBVolume(c2);
 			Vec2 toC2 = c2.center - center;
-			const float lensq = toC2.len_sq();
-			if(lensq >= ZEROVEC_LENGTH_SQ) {
-				toC2 *= 1.0f / std::sqrt(lensq);
-				const Vec2 tv(support(toC2) - c2.support(-toC2));
-				const float r_min = std::min(radius, c2.radius);
-				if(tv.dot(toC2) < 0 ||
-					tv.len_sq() < frea::Square(r_min*2))
-				{
-					// 新たな円を算出
-					const Vec2 tv0(center - toC2*radius),
-								 tv1(c2.center + toC2*c2.radius);
-					radius = tv0.distance(tv1) * .5f;
-					center = (tv0+tv1) * .5f;
-				} else {
+			const float len = toC2.normalize();
+			if(len >= ZEROVEC_LENGTH) {
+				const Vec2 p2 = c2.support(toC2);
+				const Vec2 tv(p2 - support(toC2));
+				if(tv.dot(toC2) < 0) {
 					// 円が内包されている
-					if(radius < c2.radius) {
-						radius = c2.radius;
-						center = c2.center;
-					}
+					return;
 				}
+				Vec2 p0 = support(-toC2),
+					p1 = c2.support(-toC2);
+				if(toC2.dot(p1) < toC2.dot(p0)) {
+					std::swap(p0, p1);
+				}
+				center = (p0+p2) /2;
+				radius = p0.distance(p2) + 1e-3f;
 			} else {
 				// 円の中心が同じ位置にある
-				radius = std::max(c2.radius, radius);
+				radius = std::max(c2.radius, radius) + len;
 			}
 		}
 	}
