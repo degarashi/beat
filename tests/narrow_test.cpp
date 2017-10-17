@@ -14,6 +14,15 @@ namespace beat {
 					Narrow_t::Initialize();
 				}
 		};
+		// Narrow::Hitで、引数の順序を入れ替えても結果は同じ
+		TEST_F(Narrow2D, Reverse) {
+			using CT = lubee::Types<Circle, AABB>;
+			const auto c0 = makeRandomTree<CT,CT>(64, 8);
+			const auto c1 = makeRandomTree<CT,CT>(64, 8);
+			const bool b0 = Narrow_t::Hit(c0.get(), c1.get(), 0),
+						b1 = Narrow_t::Hit(c1.get(), c0.get(), 0);
+			ASSERT_EQ(b0, b1);
+		}
 		// 階層構造を含めたNarrowPheseテスト (2D)
 		TEST_F(Narrow2D, RandomTree_Multi) {
 			// ランダムに当たり判定階層構造を作る
