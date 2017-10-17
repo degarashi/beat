@@ -15,6 +15,8 @@ namespace beat {
 	template <class D, class T, class V>
 	struct ITriangleData;
 
+	using Time_t = uint64_t;
+
 	namespace g2 {
 		struct IModel;
 		struct Line;
@@ -35,6 +37,10 @@ namespace beat {
 
 		using ClipF = std::function<float (float)>;
 
+		// 境界ボリュームAがきちんとBを覆っているかチェック(for Debug)
+		void CheckBoundary(const IModel* a, const IModel* b);
+		// 境界ボリュームがきちんと子ノードを覆っているかチェック(for Debug)
+		void CheckBoundaryTree(const IModel* node, const Time_t t);
 		bool IsCW(const PointL& pts);
 		bool IsCrossing(const Line& ls0, const Line& ls1, float len0, float len1, float t);
 		Vec2 NearestPoint(const Line& ls, const Vec2& p, const ClipF& clip);
