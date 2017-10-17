@@ -111,6 +111,7 @@ namespace beat {
 		}
 		void Circle::setBoundary(const IModel* p) {
 			p->im_getBVolume(*this);
+			radius += 1e-3f;
 		}
 		void Circle::appendBoundary(const IModel* p) {
 			Circle c2;
