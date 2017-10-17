@@ -58,6 +58,7 @@ namespace beat {
 			virtual const AMat32& im_getToWorld() const;
 			const static AMat32 cs_idMat;
 			virtual MdlItr im_getInner() const;
+			virtual void im_selfCheck(Time_t t) const;
 			bool im_hasInner() const;
 
 			virtual void im_transform(void* dst, const AMat32& m) const = 0;

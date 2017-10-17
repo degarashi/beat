@@ -27,6 +27,7 @@ namespace beat {
 		MdlItr IModel::im_getInner() const {
 			return MdlItr();
 		}
+		void IModel::im_selfCheck(Time_t /*t*/) const {}
 		bool IModel::im_hasInner() const {
 			return static_cast<bool>(im_getInner());
 		}

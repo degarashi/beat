@@ -55,6 +55,9 @@ namespace beat {
 				bool im_isLeaf() const override {
 					return false;
 				}
+				void im_selfCheck(const Time_t t) const override {
+					CheckBoundaryTree(this, t);
+				}
 		};
 	}
 }
