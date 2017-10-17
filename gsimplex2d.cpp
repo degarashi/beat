@@ -82,7 +82,7 @@ namespace beat {
 				}
 				Vec2 cp = _tri.pos[0] + sdir*r;
 				const float len = cp.normalize();
-				if(len < ZEROVEC_LENGTH) {
+				if(len < 1e-4f) {
 					// ライン上に原点がある
 					// 90度回転
 					Vec2 ldir = Vec2{sdir.y, -sdir.x};
@@ -121,7 +121,12 @@ namespace beat {
 					const float d1 = rV1.dot(dir),
 							  d0 = rV0.dot(dir),
 							  d2 = rV2.dot(dir);
-					if(d1-NEAR_THRESHOLD < d0 || d1-NEAR_THRESHOLD < d2)
+					if(
+						d1 < d0
+						|| d1 < d2
+						|| rV1 == rV0
+						|| rV1 == rV2
+					)
 						return _setAsNotHit(3);
 				}
 
