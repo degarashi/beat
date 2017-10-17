@@ -1,5 +1,6 @@
 #pragma once
 #include "spine/noseq_list.hpp"
+#include <unordered_set>
 
 namespace beat {
 	using CMask = uint32_t;
@@ -56,6 +57,16 @@ namespace beat {
 			RoundRobin(const FGetBV& cb, float /*fieldSize*/, float /*fieldOfs*/):
 				_fGetBV(cb)
 			{}
+			// デバッグ用。オブジェクトを重複して登録してないか確認
+			void selfCheck() const {
+				std::unordered_set<void*> set;
+				for(int i=0 ; i<NumType ; i++) {
+					for(auto& n : _node[i]) {
+						Assert(set.count(n.pCol)==0, "self-check failed");
+						set.insert(n.pCol);
+					}
+				}
+			}
 			IDType add(void* pCol, const CMask mask) {
 				const Type typ = _DetectType(mask);
 				return IDType {

@@ -50,6 +50,27 @@ namespace beat {
 				static bool IsTypeB(const CMask mask) {
 					return mask & 0x80000000;
 				}
+				// NTreeから呼ばれる。隣接セルとの重複チェック
+				template <class IdToCache>
+				void debug_CellCheck(const IdToCache& id2c, const DualCell& cell) const {
+					base_t::debug_CellCheck(id2c, cell);
+
+					const auto	&ent0 = getMapList(),
+								&ent1 = cell.getMapList();
+					for(auto& e0 : ent0) {
+						const auto& c0 = id2c(e0.id);
+						for(auto& e1 : ent1) {
+							const auto& c1 = id2c(e1.id);
+							Assert(!c0.bvolume.hit(c1.bvolume), "self-check failed");
+						}
+					}
+				}
+				template <class CB>
+				void debug_Iterate(CB&& cb) const {
+					base_t::debug_Iterate(cb);
+					for(auto& e0 : getMapList())
+						cb(e0.id);
+				}
 				void addObj(const CMask mask, const VolumeEntry_t& v) {
 					if(IsTypeB(mask))
 						_mlist.emplace_back(v);

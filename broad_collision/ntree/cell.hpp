@@ -120,6 +120,24 @@ namespace beat {
 				Cell():
 					_nLower(0)
 				{}
+				// NTreeから呼ばれる。隣接セルとの重複チェック
+				template <class IdToCache>
+				void debug_CellCheck(const IdToCache& id2c, const Cell& cell) const {
+					const auto	&ent0 = getObjList(),
+								&ent1 = cell.getObjList();
+					for(auto& e0 : ent0) {
+						const auto& c0 = id2c(e0.id);
+						for(auto& e1 : ent1) {
+							const auto& c1 = id2c(e1.id);
+							Assert(!c0.bvolume.hit(c1.bvolume), "self-check failed");
+						}
+					}
+				}
+				template <class CB>
+				void debug_Iterate(CB& cb) const {
+					for(auto& e0 : getObjList())
+						cb(e0.id);
+				}
 				void clear() {
 					_olist.clear();
 					_nLower = 0;

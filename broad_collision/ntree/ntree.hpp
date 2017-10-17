@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <unordered_map>
 #include <stack>
+#include "lubee/meta/constant.hpp"
+#include <unordered_set>
 
 namespace beat {
 	namespace ntree {
@@ -376,6 +378,32 @@ namespace beat {
 				bool hasEntry(const MortonId num) const {
 					return _mapper.hasEntry(num.value);
 				}
+				void _selfCheck(std::unordered_set<NS_Id>&, lubee::IConst<0>) const {}
+				template <int L>
+				void _selfCheck(std::unordered_set<NS_Id>& set, lubee::IConst<L>) const {
+					constexpr int From = Mapper_t::CalcNEnt(0, lubee::IConst<L>()),
+									To = Mapper_t::CalcNEnt(0, lubee::IConst<L+1>());
+					const auto id2Cache = [this](const NS_Id id) -> decltype(auto) {
+						return _getCache(id);
+					};
+					const auto chkUnique = [&set](const NS_Id id){
+						Assert(set.count(id)==0, "self-check failed");
+						set.insert(id);
+					};
+					for(int i=From ; i<To ; i++) {
+						if(_mapper.hasEntry(i)) {
+							auto& cell0 = _mapper.getEntry(i);
+							cell0.debug_Iterate(chkUnique);
+							for(int j=i+1 ; j<To ; j++) {
+								if(_mapper.hasEntry(j)) {
+									auto& cell1 = _mapper.getEntry(j);
+									cell0.debug_CellCheck(id2Cache, cell1);
+								}
+							}
+						}
+					}
+					_selfCheck(set, lubee::IConst<L-1>());
+				}
 
 			public:
 				/*! \param[in] fieldSize	当たり判定対象の一片サイズ */
@@ -384,6 +412,11 @@ namespace beat {
 					_fieldOffset(fofs),
 					_fGetBV(f)
 				{}
+				// デバッグ用。異なるセル同士で重なりがないか確認
+				void selfCheck() const {
+					std::unordered_set<NS_Id>	set;
+					_selfCheck(set, lubee::IConst<NDiv-1>());
+				}
 				//! バウンディングボリュームの更新
 				void refreshBVolume() {
 					for(auto& m : _ptrToId) {

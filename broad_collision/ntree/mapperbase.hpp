@@ -10,19 +10,18 @@ namespace beat {
 		*/
 		template <int NDiv, int Dim>
 		class MapperBase {
-			private:
-				constexpr static int _CalcNEnt(const int sum, lubee::IConst<0>) {
+			public:
+				constexpr static int CalcNEnt(const int sum, lubee::IConst<0>) {
 					return sum + 1;
 				}
 				template <int Cur>
-				constexpr static int _CalcNEnt(const int sum, lubee::IConst<Cur>) {
-					return _CalcNEnt(sum+lubee::ConstantPow<Cur>(N_LayerSize), lubee::IConst<Cur-1>());
+				constexpr static int CalcNEnt(const int sum, lubee::IConst<Cur>) {
+					return CalcNEnt(sum+lubee::ConstantPow<Cur>(N_LayerSize), lubee::IConst<Cur-1>());
 				}
-			public:
 				constexpr static int N_Div = NDiv,
 									N_Width = (1 << N_Div),
 									N_LayerSize = (1 << Dim),
-									N_Ent = _CalcNEnt(0, lubee::IConst<N_Div>());
+									N_Ent = CalcNEnt(0, lubee::IConst<N_Div>());
 			protected:
 				MapperBase() {
 					// 2D木なら4, 3D木なら8. それ以外はエラー

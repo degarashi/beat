@@ -279,6 +279,10 @@ namespace beat {
 			Time_t getTime() const {
 				return _time;
 			}
+			// デバッグ用
+			void selfCheck() const {
+				_broad.selfCheck();
+			}
 			template <class CB>
 			void iterateHistCur(const int idx, CB&& cb) const { _IterateHist(_getCurHist(), idx, std::forward<CB>(cb)); }
 			template <class CB>
