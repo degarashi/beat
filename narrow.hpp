@@ -133,27 +133,30 @@ namespace beat {
 				}
 			}
 			//! mdl0を展開したものとmdl1を当たり判定
-			/*! mdl1は既にrefreshをかけてある前提
+			/*!
+				mdl1は既にrefreshをかけてある前提
 				\param[in] mdl0 展開する方のインタフェース
 				\param[in] mdl1 展開されない方のインタフェース
-				\param[in] bSwap 左右を入れ替えて判定している場合はtrue */
-			static bool _HitL(const IModel* mdl0, const IModel* mdl1, const bool bSwap, const Time_t t) {
-				if(!mdl0->im_refresh(t))
-					return false;
+			*/
+			static bool _LExpandCheck(const IModel* mdl0, const IModel* mdl1, const bool bSwap, const Time_t t) {
+				mdl0->im_refresh(t);
+				mdl1->im_refresh(t);
 				auto in = mdl0->im_getInner();
 				if(in) {
 					do {
-						if(_HitSingle(in.get(), mdl1)) {
-							if(_HitL(mdl1, in.get(), false, t))
-								return true;
+						if(in.get()->im_refresh(t)) {
+							if(_HitSingle(in.get(), mdl1)) {
+								if(_LExpandCheck(mdl1, in.get(), false, t))
+									return true;
+							}
 						}
 					} while(++in);
+					return false;
 				} else {
-					if(bSwap)
-						return true;
-					return _HitL(mdl1, mdl0, true, t);
+					if(!bSwap)
+						return _LExpandCheck(mdl1, mdl0, true, t);
+					return true;
 				}
-				return false;
 			}
 		public:
 			//! 当たり判定を行う関数をリストにセットする
@@ -182,7 +185,7 @@ namespace beat {
 				if(mdl0->im_refresh(t) && mdl1->im_refresh(t)) {
 					if(_HitSingle(mdl0, mdl1)) {
 						if(mdl0->im_hasInner() | mdl1->im_hasInner())
-							return _HitL(mdl1, mdl0, false, t);
+							return _LExpandCheck(mdl0, mdl1, false, t);
 						return true;
 					}
 				}
