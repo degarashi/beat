@@ -72,7 +72,7 @@ namespace beat {
 				Vec2 sdir = _tri.pos[1] - _tri.pos[0];
 				const float dirLen = sdir.normalize();
 				const float r = sdir.dot(-_tri.pos[0]);
-				D_Assert0(r >= 0);
+				D_Assert(r >= 0, "expect: r>=0, actual: r=%f", r);
 				if(r > dirLen)
 					return _setAsNotHit(2);
 				if(r >= dirLen-1e-5f) {
