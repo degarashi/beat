@@ -27,7 +27,8 @@ namespace beat {
 		TYPED_TEST_CASE(Serialization, STypes);
 
 		TYPED_TEST(Serialization, General) {
-			TypeParam shape;
+			using Mdl = Model<TypeParam>;
+			Mdl shape;
 			this->Generator::genShape(shape);
 			lubee::CheckSerialization(shape);
 		}
