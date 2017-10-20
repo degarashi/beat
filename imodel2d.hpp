@@ -107,10 +107,6 @@ namespace beat {
 				return T::hit(pos);
 			}
 		};
-		template <class T>
-		std::ostream& operator << (std::ostream& os, const Model<T>& m) {
-			return m.print(os);
-		}
 
 		class ITf;
 		class GSimplex;
