@@ -35,6 +35,8 @@ namespace beat {
 
 			Vec2 support(const Vec2& dir) const;
 			Segment operator * (const AMat32& m) const;
+			bool operator == (const Segment& s) const;
+			bool operator != (const Segment& s) const;
 			friend std::ostream& operator << (std::ostream& os, const Segment& s);
 			// -----------------------------
 

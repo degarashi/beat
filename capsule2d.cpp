@@ -53,6 +53,14 @@ namespace beat {
 			c.radius = radius * m.convert<2,2>().calcDeterminant();
 			return c;
 		}
+		bool Capsule::operator == (const Capsule& c) const {
+			return from == c.from &&
+					to == c.to &&
+					radius == c.radius;
+		}
+		bool Capsule::operator != (const Capsule& c) const {
+			return !(this->operator ==(c));
+		}
 		Capsule& Capsule::operator += (const Vec2& ofs) {
 			from += ofs;
 			to += ofs;

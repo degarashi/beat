@@ -32,6 +32,8 @@ namespace beat {
 
 			Vec2 support(const Vec2& dir) const;
 			Circle operator * (const AMat32& m) const;
+			bool operator == (const Circle& c) const;
+			bool operator != (const Circle& c) const;
 			friend std::ostream& operator << (std::ostream& os, const Circle& c);
 			// -----------------------------
 

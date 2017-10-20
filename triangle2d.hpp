@@ -40,6 +40,8 @@ namespace beat {
 			AABB bs_getBBox() const;
 
 			Triangle operator * (const AMat32& m) const;
+			bool operator == (const Triangle& t) const;
+			bool operator != (const Triangle& t) const;
 			friend std::ostream& operator << (std::ostream& os, const Triangle& p);
 			// -----------------------------
 

@@ -24,6 +24,8 @@ namespace beat {
 
 			Vec2 support(const Vec2& dir) const;
 			Ray operator * (const AMat32& m) const;
+			bool operator == (const Ray& r) const;
+			bool operator != (const Ray& r) const;
 			friend std::ostream& operator << (std::ostream& os, const Ray& r);
 			// -----------------------------
 

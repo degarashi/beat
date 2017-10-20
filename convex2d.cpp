@@ -166,6 +166,12 @@ namespace beat {
 				pl[i] = point[i].convertI<3,2>(1) * m;
 			return pl;
 		}
+		bool Convex::operator == (const Convex& c) const {
+			return point == c.point;
+		}
+		bool Convex::operator != (const Convex& c) const {
+			return !(this->operator ==(c));
+		}
 		Convex& Convex::operator *= (const AMat32& m) {
 			for(auto& p : point)
 				p = p.convertI<3,2>(1) * m;

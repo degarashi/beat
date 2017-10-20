@@ -24,6 +24,8 @@ namespace beat {
 			Vec2 support(const Vec2& dir) const;
 			Capsule operator * (const AMat32& m) const;
 			Capsule& operator += (const Vec2& ofs);
+			bool operator == (const Capsule& c) const;
+			bool operator != (const Capsule& c) const;
 			friend std::ostream& operator << (std::ostream& os, const Capsule& c);
 			// -----------------------------
 

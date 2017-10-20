@@ -49,6 +49,13 @@ namespace beat {
 				dir.convert<3>()*m
 			};
 		}
+		bool Ray::operator == (const Ray& r) const {
+			return pos == r.pos &&
+					dir == r.dir;
+		}
+		bool Ray::operator != (const Ray& r) const {
+			return !(this->operator ==(r));
+		}
 		std::ostream& operator << (std::ostream& os, const Ray& r) {
 			return os << "Ray [ pos: " << r.pos << ", dir: " << r.dir << ']';
 		}

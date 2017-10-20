@@ -80,6 +80,13 @@ namespace beat {
 			return Circle(ori,
 						std::sqrt(std::max(tx.len_sq(), ty.len_sq())));
 		}
+		bool Circle::operator == (const Circle& c) const {
+			return center == c.center &&
+					radius == c.radius;
+		}
+		bool Circle::operator != (const Circle& c) const {
+			return !(this->operator ==(c));
+		}
 
 		Vec2 Circle::support(const Vec2& dir) const {
 			return dir * radius + center;

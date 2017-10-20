@@ -65,6 +65,13 @@ namespace beat {
 				dir.convert<3>()*m
 			};
 		}
+		bool Line::operator == (const Line& l) const {
+			return pos == l.pos &&
+					dir == l.dir;
+		}
+		bool Line::operator != (const Line& l) const {
+			return !(this->operator ==(l));
+		}
 		std::ostream& operator << (std::ostream& os, const Line& l) {
 			return os << "Line [ pos: " << l.pos << ", dir: " << l.dir << ']';
 		}

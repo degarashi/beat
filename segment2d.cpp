@@ -122,6 +122,13 @@ namespace beat {
 				to.convertI<3,2>(1)*m
 			};
 		}
+		bool Segment::operator == (const Segment& s) const {
+			return from == s.from &&
+					to == s.to;
+		}
+		bool Segment::operator != (const Segment& s) const {
+			return !(this->operator ==(s));
+		}
 		std::ostream& operator << (std::ostream& os, const Segment& s) {
 			return os << "Segment(2d) [ from: " << s.from << ", to: " << s.to << ']';
 		}

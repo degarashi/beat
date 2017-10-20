@@ -28,6 +28,8 @@ namespace beat {
 
 			Vec2 support(const Vec2& dir) const noexcept;
 			Line operator * (const AMat32& m) const;
+			bool operator == (const Line& l) const;
+			bool operator != (const Line& l) const;
 			friend std::ostream& operator << (std::ostream& os, const Line& l);
 			// -----------------------------
 

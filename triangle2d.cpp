@@ -71,6 +71,14 @@ namespace beat {
 				ret.pos[i] = pos[i].convertI<3,2>(1) * m;
 			return ret;
 		}
+		bool Triangle::operator == (const Triangle& t) const {
+			return pos[0] == t.pos[0] &&
+					pos[1] == t.pos[1] &&
+					pos[2] == t.pos[2];
+		}
+		bool Triangle::operator != (const Triangle& t) const {
+			return !(this->operator ==(t));
+		}
 		Triangle Triangle::Encapsule(const AABB& a) {
 			return Encapsule(Circle::Encapsule(a));
 		}

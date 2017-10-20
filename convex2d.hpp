@@ -73,6 +73,8 @@ namespace beat {
 				Convex operator * (const AMat32& m) const;
 				Convex& operator *= (const AMat32& m);
 				Convex& operator += (const Vec2& ofs);
+				bool operator == (const Convex& c) const;
+				bool operator != (const Convex& c) const;
 				friend std::ostream& operator << (std::ostream& os, const Convex& c);
 				// ----------------------------------------
 
