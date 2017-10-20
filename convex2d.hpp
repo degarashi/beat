@@ -18,6 +18,9 @@ namespace beat {
 			private:
 				PointL	point;
 
+				template <class Ar>
+				friend void serialize(Ar&, Convex&);
+
 			public:
 				Convex() = default;
 				/*! \param[in] v 凸包と分かっている頂点 */

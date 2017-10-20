@@ -15,6 +15,10 @@ namespace beat {
 				bool _checkHitX(const Segment& s0, int from, int to) const;
 				bool _checkHitY(const Segment& s0, int from, int to) const;
 				std::pair<int,int> _getAreaNum(const Vec2& p) const;
+
+				template <class Ar>
+				friend void serialize(Ar&, AABB&);
+
 			public:
 				Vec2 min, max;
 
