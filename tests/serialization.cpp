@@ -1,5 +1,6 @@
 #include "generate.hpp"
-#include "serialization/model2d.hpp"
+#include "../serialization/model2d.hpp"
+#include "../serialization/pose2d.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -25,6 +26,16 @@ namespace beat {
 			Mdl shape;
 			this->Generator::genShape(shape);
 			lubee::CheckSerialization(shape);
+		}
+
+		using OtherTypes = ::testing::Types<
+			Pose
+		>;
+		TYPED_TEST_CASE(Serialization, OtherTypes);
+		TYPED_TEST(Serialization, General) {
+			TypeParam obj;
+			this->genShape(obj);
+			lubee::CheckSerialization(obj);
 		}
 	}
 }
