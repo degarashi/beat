@@ -9,6 +9,7 @@
 #include "../random/line2d.hpp"
 #include "../random/ray2d.hpp"
 #include "../random/triangle2d.hpp"
+#include "../random/pose2d.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -22,7 +23,8 @@ namespace beat {
 				RFloat	_rf,
 						_rp,
 						_rcirr,
-						_rcapr;
+						_rcapr,
+						_rscale;
 			public:
 				void setPointRange(const RangeF& r) {
 					_rp = mt().getUniformF<float>(r);
@@ -33,12 +35,16 @@ namespace beat {
 				void setCapsuleRadius(const RangeF& r) {
 					_rcapr = mt().getUniformF<float>(r);
 				}
+				void setScalingRange(const RangeF& r) {
+					_rscale = mt().getUniformF<float>(r);
+				}
 				Generator():
 					_ri(mt().getUniformF<int>()),
 					_rf(mt().getUniformF<float>()),
 					_rp(mt().getUniformF<float>(RangeF{1e2f})),
 					_rcirr(mt().getUniformF<float>(RangeF{0, 1e1f})),
-					_rcapr(mt().getUniformF<float>(RangeF{0, 1e1f}))
+					_rcapr(mt().getUniformF<float>(RangeF{0, 1e1f})),
+					_rscale(mt().getUniformF<float>(RangeF{1e-2f, 1e1f}))
 				{}
 				void genShape(Point& dst) { dst = genPoint(); }
 				void genShape(Segment& dst) { dst = genSegment(); }
@@ -49,7 +55,10 @@ namespace beat {
 				void genShape(Capsule& dst) { dst = genCapsule(); }
 				void genShape(Circle& dst) { dst = genCircle(); }
 				void genShape(Convex& dst) { dst = genConvex(); }
-
+				void genShape(Pose& dst) { dst = genPose(); }
+				Pose genPose() {
+					return g2::random::GenPose(_rp, _rscale);
+				}
 				Point genPoint() {
 					return random::GenPoint(_rp);
 				}
