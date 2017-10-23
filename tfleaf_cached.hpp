@@ -14,7 +14,7 @@ namespace beat {
 				mutable Shape	_tfShape;
 				const Shape& _getTfShape() const {
 					const auto accum = base_t::getAccum();
-					if(!_baseAccum || *_baseAccum != accum) {
+					if(!_baseAccum || *_baseAccum != *accum) {
 						_baseAccum = accum;
 						this->getModel()->im_transform(&_tfShape, base_t::getGlobal());
 					}

@@ -124,7 +124,10 @@ namespace beat {
 			return true;
 		}
 		bool TfLeaf_base::_refresh(Accum::value_t& a, Accum*) const {
-			++a;
+			if(a)
+				++*a;
+			else
+				a = 0;
 			getModel();
 			getPose();
 			return true;

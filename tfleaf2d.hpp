@@ -16,10 +16,11 @@ namespace beat {
 			private:
 				using Pose_t = ::beat::g2::Pose;
 				struct Pose;
-				struct Getter : spi::RFlag_Getter<uint32_t> {
+				using Ac_OP = spi::Optional<uint32_t>;
+				struct Getter : spi::RFlag_Getter<Ac_OP> {
 					using RFlag_Getter::operator ();
 					counter_t operator()(const Pose_t& p, Pose*, const TfLeaf_base&) const {
-						return *p.getAccum();
+						return p.getAccum();
 					}
 				};
 				using Global_t = spi::AcCheck<AMat32, Getter>;
@@ -34,7 +35,7 @@ namespace beat {
 					((Center)(Vec2)(Model)(Global)) \
 					((BCircle)(Circle)(Model)(Pose)) \
 					((BBox)(AABB)(Model)(Pose)) \
-					((Accum)(uint32_t)(Model)(Pose))
+					((Accum)(Ac_OP)(Model)(Pose))
 				RFLAG_DEFINE(TfLeaf_base, SEQ)
 
 				template <class Ar>
