@@ -19,7 +19,6 @@ namespace beat {
 					}
 					return _tfShape;
 				}
-				Ud	_udata;
 			public:
 				using base_t::base_t;
 				bool im_canCacheShape() const override {
