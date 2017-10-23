@@ -1,6 +1,10 @@
 #pragma once
 #include "../tfnode_base2d.hpp"
+#include "tfnode_static2d.hpp"
+#include "tfleaf_cached.hpp"
 #include "model2d.hpp"
+#include "pose2d.hpp"
+#include "spine/serialization/treenode.hpp"
 
 namespace beat {
 	namespace g2 {

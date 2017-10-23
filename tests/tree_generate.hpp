@@ -2,14 +2,7 @@
 #include "generate.hpp"
 #include "../g2objects.hpp"
 #include "../tfnode_static2d.hpp"
-#include "../tfleaf2d.hpp"
 #include "../tfleaf_cached.hpp"
-#include "spine/serialization/treenode.hpp"
-#include "../serialization/tfnode_static2d.hpp"
-#include "../serialization/tfleaf2d.hpp"
-#include "../serialization/model2d.hpp"
-#include "../serialization/pose2d.hpp"
-#include "../serialization/tfleaf_cached.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -147,53 +140,3 @@ namespace beat {
 		};
 	}
 }
-
-#include <cereal/types/polymorphic.hpp>
-#include <cereal/archives/binary.hpp>
-#include <cereal/archives/json.hpp>
-
-CEREAL_REGISTER_TYPE(beat::g2::PointM)
-CEREAL_REGISTER_TYPE(beat::g2::LineM)
-CEREAL_REGISTER_TYPE(beat::g2::RayM)
-CEREAL_REGISTER_TYPE(beat::g2::SegmentM)
-CEREAL_REGISTER_TYPE(beat::g2::AABBM)
-CEREAL_REGISTER_TYPE(beat::g2::TriangleM)
-CEREAL_REGISTER_TYPE(beat::g2::CircleM)
-CEREAL_REGISTER_TYPE(beat::g2::ConvexM)
-CEREAL_REGISTER_TYPE(beat::g2::CapsuleM)
-
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::PointM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::LineM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::RayM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::SegmentM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::AABBM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::TriangleM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::CircleM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::ConvexM)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::IModel, beat::g2::CapsuleM)
-
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::AABBNode, "AABBNode")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::CircleNode, "CircleNode")
-
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::PointLeaf, "PointLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::LineLeaf, "LineLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::RayLeaf, "RayLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::SegmentLeaf, "SegmentLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::AABBLeaf, "AABBLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::TriangleLeaf, "TriangleLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::CircleLeaf, "CircleLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::ConvexLeaf, "ConvexLeaf")
-CEREAL_REGISTER_TYPE_WITH_NAME(beat::g2::TreeGenerator::CapsuleLeaf, "CapsuleLeaf")
-
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::AABBNode)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::CircleNode)
-
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::PointLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::LineLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::RayLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::SegmentLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::AABBLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::TriangleLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::CircleLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::ConvexLeaf)
-CEREAL_REGISTER_POLYMORPHIC_RELATION(beat::g2::ITf, beat::g2::TreeGenerator::CapsuleLeaf)
