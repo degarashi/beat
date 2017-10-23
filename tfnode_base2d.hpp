@@ -46,6 +46,8 @@ namespace beat {
 			protected:
 				using model_t = Model<Boundary>;
 				Ud					_udata;
+				template <class Ar, class B, class UD>
+				friend void serialize(Ar&, TfNode_base<B,UD>&);
 			public:
 				using model_t::model_t;
 				/*! ユーザーデータがvoidの時は親ノードのデータを返す */

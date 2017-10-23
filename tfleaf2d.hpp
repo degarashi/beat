@@ -36,6 +36,9 @@ namespace beat {
 					((BBox)(AABB)(Model)(Pose)) \
 					((Accum)(uint32_t)(Model)(Pose))
 				RFLAG_DEFINE(TfLeaf_base, SEQ)
+
+				template <class Ar>
+				friend void serialize(Ar&, TfLeaf_base&);
 			protected:
 				TfLeaf_base() = default;
 
@@ -79,6 +82,9 @@ namespace beat {
 			private:
 				using base_t = TfLeaf_base ;
 				Ud	_udata;
+				template <class Ar, class UD>
+				friend void serialize(Ar&, TfLeaf<UD>&);
+
 			public:
 				using base_t::base_t;
 				/*! ユーザーデータがvoidの時は親ノードのデータを返す */

@@ -9,16 +9,21 @@ namespace beat {
 			private:
 				using base_t = TfLeaf<Ud>;
 
-				mutable uint32_t _baseAccum = 0;
+				using Ac_OP = spi::Optional<uint32_t>;
+				mutable Ac_OP	_baseAccum;
 				mutable Shape	_tfShape;
 				const Shape& _getTfShape() const {
 					const auto accum = base_t::getAccum();
-					if(accum != _baseAccum) {
+					if(!_baseAccum || *_baseAccum != accum) {
 						_baseAccum = accum;
 						this->getModel()->im_transform(&_tfShape, base_t::getGlobal());
 					}
 					return _tfShape;
 				}
+				template <class Ar, class S, class UD>
+				friend void save(Ar&, const TfLeafCached<S,UD>&);
+				template <class Ar, class S, class UD>
+				friend void load(Ar&, TfLeafCached<S,UD>&);
 			public:
 				using base_t::base_t;
 				bool im_canCacheShape() const override {
@@ -40,7 +45,7 @@ namespace beat {
 				void* im_getCore() override {
 					_getTfShape();
 					// データが改変されるかも知れないので更新フラグを立てる
-					base_t::refModel();
+					_baseAccum = spi::none;
 					return &_tfShape;
 				}
 		};

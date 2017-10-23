@@ -9,3 +9,14 @@
 #include "serialization/aabb2d.hpp"
 #include "serialization/triangle2d.hpp"
 #include "serialization/convex2d.hpp"
+
+namespace beat {
+	namespace g2 {
+		template <class Ar, class T>
+		void serialize(Ar& ar, Model<T>& mdl) {
+			ar(
+				cereal::base_class<T>(&mdl)
+			);
+		}
+	}
+}

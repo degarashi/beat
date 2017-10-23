@@ -11,6 +11,8 @@ namespace beat {
 				using SP = typename base_t::SP;
 				mutable bool	_bChanged = true,
 								_bValid;
+				template <class Ar, class B, class UD>
+				friend void serialize(Ar&, TfNode_Static<B,UD>&);
 			protected:
 				static void OnChildAdded(typename base_t::pointer* self, const SP& /*node*/) {
 					static_cast<TfNode_Static*>(self)->_setAsChanged();
