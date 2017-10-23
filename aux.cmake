@@ -21,11 +21,11 @@ function(GetFilename PTH DST)
 	endif()
 endfunction()
 
-# リストSRCのソースファイルを用いてrev_SUBNAME という名前でテストexecutableを作成
+# リストSRCのソースファイルを用いてbeat_SUBNAME という名前でテストexecutableを作成
 function(AddTest SUBNAME SRC LIB)
 	list(LENGTH SRC LEN)
 	if(${LEN} GREATER 0)
-		string(CONCAT EXENAME rev_ ${SUBNAME})
+		string(CONCAT EXENAME beat_ ${SUBNAME})
 		add_executable(${EXENAME} ${SRC})
 		target_link_libraries(${EXENAME}
 			${LIB}
