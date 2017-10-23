@@ -8,7 +8,10 @@ namespace beat {
 			getOffset();
 			getRotation();
 			getScaling();
-			++dst;
+			if(dst)
+				++(*dst);
+			else
+				dst = 0;
 			return true;
 		}
 		bool Pose::_refresh(ToWorld::value_t& dst, ToWorld*) const {
@@ -24,7 +27,6 @@ namespace beat {
 		}
 		Pose::Pose(const Vec2& pos, const RadF ang, const Vec2& sc) {
 			setAll(pos, ang, sc);
-			setAccum(std::rand());
 		}
 		void Pose::identity() {
 			setAll(Vec2(0), RadF(0), Vec2(1));
@@ -33,6 +35,7 @@ namespace beat {
 			setOffset(ofs);
 			setRotation(ang);
 			setScaling(sc);
+			setAccum(spi::none);
 		}
 		void Pose::moveUp(const float speed) {
 			refOffset() += getUp() * speed;
@@ -58,12 +61,11 @@ namespace beat {
 			setRotation(AngleValue(up));
 		}
 		Pose Pose::lerp(const Pose& p1, const float t) const {
-			Pose ret;
-			ret.setOffset(getOffset().l_intp(p1.getOffset(), t));
-			ret.setRotation((p1.getRotation() - getRotation()) * t + getRotation());
-			ret.setScaling(getScaling().l_intp(p1.getScaling(), t));
-			ret.setAccum(getAccum()-1);
-			return ret;
+			return {
+				getOffset().l_intp(p1.getOffset(), t),
+				(p1.getRotation() - getRotation()) * t + getRotation(),
+				getScaling().l_intp(p1.getScaling(), t)
+			};
 		}
 		bool Pose::operator == (const Pose& ps) const noexcept {
 			return getOffset() == ps.getOffset() &&

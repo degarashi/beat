@@ -3,6 +3,7 @@
 #include "lubee/alignedalloc.hpp"
 #include "frea/matrix.hpp"
 #include "frea/angle.hpp"
+#include "spine/optional.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -14,11 +15,12 @@ namespace beat {
 				using AVec2 = frea::AVec2;
 				using AMat32 = frea::Mat_t<float, 3, 2, true>;
 				using RadF = frea::RadF;
+				using Ac_OP = spi::Optional<uint32_t>;
 				#define SEQ \
 					((Offset)(AVec2)) \
 					((Rotation)(RadF)) \
 					((Scaling)(AVec2)) \
-					((Accum)(uint32_t)(Offset)(Rotation)(Scaling)) \
+					((Accum)(Ac_OP)(Offset)(Rotation)(Scaling)) \
 					((ToWorld)(AMat32)(Offset)(Rotation)(Scaling)) \
 					((ToLocal)(AMat32)(ToWorld))
 				RFLAG_DEFINE(Pose, SEQ)

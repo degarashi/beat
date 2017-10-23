@@ -19,7 +19,7 @@ namespace beat {
 				struct Getter : spi::RFlag_Getter<uint32_t> {
 					using RFlag_Getter::operator ();
 					counter_t operator()(const Pose_t& p, Pose*, const TfLeaf_base&) const {
-						return p.getAccum();
+						return *p.getAccum();
 					}
 				};
 				using Global_t = spi::AcCheck<AMat32, Getter>;
