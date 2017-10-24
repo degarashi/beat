@@ -1,5 +1,6 @@
 #pragma once
 #include "spine/noseq_list.hpp"
+#include "getbv.hpp"
 #include <unordered_set>
 
 namespace beat {
@@ -35,8 +36,7 @@ namespace beat {
 			using Nodes = spi::noseq_list<Node, std::allocator<Node>, NS_id>;
 			Nodes			_node[NumType];
 			// 境界ボリュームを取得する為の関数
-			using FGetBV = std::function<BVolume (const void*)>;
-			const FGetBV 	_fGetBV;
+			const GetBV_SP<BVolume>	_getBV;
 
 			template <class CB>
 			static bool _Proc(const Node& nd0, const Node& nd1, CB&& cb) {
@@ -54,8 +54,8 @@ namespace beat {
 				return (m & 0x80000000) ? TypeB : TypeA;
 			}
 		public:
-			RoundRobin(const FGetBV& cb, float /*fieldSize*/, float /*fieldOfs*/):
-				_fGetBV(cb)
+			RoundRobin(const GetBV_SP<BVolume>& getbv, float /*fieldSize*/, float /*fieldOfs*/):
+				_getBV(getbv)
 			{}
 			// デバッグ用。オブジェクトを重複して登録してないか確認
 			void selfCheck() const {
@@ -79,9 +79,10 @@ namespace beat {
 			}
 			//! バウンディングボリュームの更新(全てのオブジェクトが対象)
 			void refreshBVolume() {
+				auto& bv = *_getBV;
 				for(int i=0 ; i<NumType ; i++) {
 					for(auto& nd : _node[i])
-						nd.volume = _fGetBV(nd.pCol);
+						nd.volume = bv(nd.pCol);
 				}
 			}
 			//! リストに登録してある全ての物体に対して衝突判定

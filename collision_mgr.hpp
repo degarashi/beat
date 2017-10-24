@@ -2,6 +2,7 @@
 #include "spine/resmgr.hpp"
 #include "spine/optional.hpp"
 #include "spine/singleton.hpp"
+#include "broad_collision/getbv.hpp"
 #include <vector>
 
 namespace beat {
@@ -263,11 +264,19 @@ namespace beat {
 				fn(c0, c1);
 				fn(c1, c0);
 			}
-			auto _makeGetBV() const {
-				return [this](const void* p) {
-					auto* cm = static_cast<const CMem*>(p);
-					return cm->template getBVolume<BVolume>(_time);
+			GetBV_SP<BVolume> _makeGetBV() const {
+				struct GetBV : IGetBV<BVolume> {
+					const ColMgr* _self;
+
+					GetBV(const ColMgr* s):
+						_self(s)
+					{}
+					BVolume operator()(const void* p) const override {
+						auto* cm = static_cast<const CMem*>(p);
+						return cm->template getBVolume<BVolume>(_self->_time);
+					}
 				};
+				return GetBV_SP<BVolume>(new GetBV(this));
 			}
 
 		public:

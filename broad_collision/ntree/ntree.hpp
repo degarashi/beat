@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <stack>
 #include "lubee/meta/constant.hpp"
+#include "../getbv.hpp"
 #include <unordered_set>
 
 namespace beat {
@@ -55,8 +56,7 @@ namespace beat {
 								_fieldOffset;
 
 				//! BVolumeをvoid*から計算する為にCtorで与えられるファンクタ
-				using FGetBV = std::function<BVolume (const void*)>;
-				const FGetBV	_fGetBV;
+				const GetBV_SP<BVolume> _getBV;
 				using CacheNS = spi::noseq_list<Cache, std::allocator<Cache>, NS_Id>;
 				CacheNS			_cache;
 
@@ -314,7 +314,7 @@ namespace beat {
 				*/
 				MortonId _addObject(const CMask mask, void* pObj, const bool bAddPtr) {
 					D_Assert0(pObj);
-					const auto bv = _fGetBV(pObj);
+					const auto bv = (*_getBV)(pObj);
 					const auto mid = Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
 					const MortonId num = MergeMortonId(mid.first, mid.second);
 					NS_Id cid;
@@ -407,10 +407,10 @@ namespace beat {
 
 			public:
 				/*! \param[in] fieldSize	当たり判定対象の一片サイズ */
-				_NTree(const FGetBV& f, const float fsize, const float fofs):
+				_NTree(const GetBV_SP<BVolume>& f, const float fsize, const float fofs):
 					_unitWidth(Mapper_t::N_Width / fsize),
 					_fieldOffset(fofs),
-					_fGetBV(f)
+					_getBV(f)
 				{}
 				// デバッグ用。異なるセル同士で重なりがないか確認
 				void selfCheck() const {
@@ -419,9 +419,10 @@ namespace beat {
 				}
 				//! バウンディングボリュームの更新
 				void refreshBVolume() {
+					const auto& bvf = *_getBV;
 					for(auto& m : _ptrToId) {
 						// 新しくBVolumeを計算
-						const auto bv = _fGetBV(m.first);
+						const auto bv = bvf(m.first);
 						const auto mid = Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
 						const auto idx0 = mid.first.asIndex(),
 									idx1 = mid.second.asIndex();
