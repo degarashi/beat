@@ -31,6 +31,13 @@ namespace beat {
 				CMask			mask;	//!< 登録時に渡されたマスク値
 				void*			pCol;	//!< コリジョンマネージャで使われるエントリ
 				BVolume			volume;
+
+				//! デバッグ用
+				bool operator == (const Node& node) const noexcept {
+					// pColは比較しない
+					return mask == node.mask &&
+							volume == node.volume;
+				}
 			};
 			// 当たり判定オブジェクトを種類別に格納
 			using Nodes = spi::noseq_list<Node, std::allocator<Node>, NS_id>;
@@ -57,6 +64,15 @@ namespace beat {
 			RoundRobin(const GetBV_SP<BVolume>& getbv, float /*fieldSize*/, float /*fieldOfs*/):
 				_getBV(getbv)
 			{}
+			// デバッグ用
+			bool operator == (const RoundRobin& r) const noexcept {
+				// _getBVは比較しない
+				for(int i=0 ; i<NumType ; i++) {
+					if(_node[i] != r._node[i])
+						return false;
+				}
+				return true;
+			}
 			// デバッグ用。オブジェクトを重複して登録してないか確認
 			void selfCheck() const {
 				std::unordered_set<void*> set;

@@ -3,6 +3,7 @@
 #include "spine/noseq_vec.hpp"
 #include <algorithm>
 #include <stack>
+#include <unordered_set>
 
 namespace beat {
 	namespace ntree {
@@ -97,6 +98,19 @@ namespace beat {
 				}
 		};
 
+		template <class Ent>
+		bool Debug_ArrayCompare(const Ent& e0, const Ent& e1) {
+			using v_t = std::decay_t<decltype(*e0.begin())>;
+			std::unordered_set<v_t> set;
+			for(auto& obj : e0) {
+				set.emplace(obj);
+			}
+			for(auto& obj : e1) {
+				if(set.count(obj) != 1)
+					return false;
+			}
+			return true;
+		}
 		using CMask = uint32_t;
 		using VolumeId = uint32_t;
 		//! シングルセルNTreeエントリ
@@ -120,6 +134,16 @@ namespace beat {
 				Cell():
 					_nLower(0)
 				{}
+				//! デバッグ用
+				bool  operator == (const Cell& c) const noexcept {
+					if(_olist.size() != c._olist.size() ||
+						_nLower != c._nLower)
+						return false;
+					return Debug_ArrayCompare(_olist, c._olist);
+				}
+				bool operator != (const Cell& c) const noexcept {
+					return !(this->operator == (c));
+				}
 				// NTreeから呼ばれる。隣接セルとの重複チェック
 				template <class IdToCache>
 				void debug_CellCheck(const IdToCache& id2c, const Cell& cell) const {

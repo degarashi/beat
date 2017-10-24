@@ -49,6 +49,16 @@ namespace beat {
 					MortonId		mortonId;
 					Index			posMin,
 									posMax;
+
+					//! デバッグ用
+					bool operator == (const Cache& c) const noexcept {
+						// pObjは比較しない
+						return mask == c.mask &&
+								bvolume == c.bvolume &&
+								mortonId == c.mortonId &&
+								posMin == c.posMin &&
+								posMax == c.posMax;
+					}
 				};
 
 				Mapper_t		_mapper;
@@ -412,6 +422,15 @@ namespace beat {
 					_fieldOffset(fofs),
 					_getBV(f)
 				{}
+				//! デバッグ用
+				bool operator == (const _NTree& nt) const noexcept {
+					// _ptrToId, _cacheは中身の比較をしない
+					return _mapper == nt._mapper &&
+							_unitWidth == nt._unitWidth &&
+							_fieldOffset == nt._fieldOffset &&
+							_cache.size() == nt._cache.size() &&
+							_ptrToId.size() == nt._ptrToId.size();
+				}
 				// デバッグ用。異なるセル同士で重なりがないか確認
 				void selfCheck() const {
 					std::unordered_set<NS_Id>	set;

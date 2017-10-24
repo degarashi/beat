@@ -50,6 +50,13 @@ namespace beat {
 				static bool IsTypeB(const CMask mask) {
 					return mask & 0x80000000;
 				}
+				bool operator == (const DualCell& c) const noexcept {
+					return static_cast<const base_t&>(*this) == static_cast<const base_t&>(c) &&
+							Debug_ArrayCompare(_mlist, c._mlist);
+				}
+				bool operator != (const DualCell& c) const noexcept {
+					return !(this->operator == (c));
+				}
 				// NTreeから呼ばれる。隣接セルとの重複チェック
 				template <class IdToCache>
 				void debug_CellCheck(const IdToCache& id2c, const DualCell& cell) const {

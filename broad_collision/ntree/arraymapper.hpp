@@ -20,6 +20,13 @@ namespace beat {
 			private:
 				Entry	_ent[base_t::N_Ent];	//!< 線形木
 			public:
+				bool operator == (const ArrayMapper& a) const noexcept {
+					for(int i=0 ; i<base_t::N_Ent ; i++) {
+						if(_ent[i] != a._ent[i])
+							return false;
+					}
+					return true;
+				}
 				bool hasEntry(const Morton_t n) const {
 					D_Assert0(n<countof(_ent));
 					// 配列なので常にエントリは存在する

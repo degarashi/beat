@@ -25,6 +25,9 @@ namespace beat {
 					// ルートノードだけは作成しておく
 					_ent[0];
 				}
+				bool operator == (const HashMapper& h) const noexcept {
+					return _ent == h._ent;
+				}
 				bool hasEntry(const Morton_t n) const {
 					return _ent.count(n) == 1;
 				}

@@ -51,6 +51,13 @@ namespace beat {
 			BCID		_bcid;
 			UD			_udata;
 		public:
+			//! デバッグ用
+			bool operator == (const ColMem& c) const noexcept {
+				return _mask == c._mask &&
+						_cur == c._cur &&
+						_prev == c._prev &&
+						_udata == c._udata;
+			}
 			template <class UD2>
 			ColMem(const CMask ms, const SP& mdl, UD2&& ud):
 				_mask(ms),
@@ -284,6 +291,13 @@ namespace beat {
 				_broad(_makeGetBV(), fieldSize, fieldOfs)
 			{
 				Narrow::Initialize();
+			}
+			bool operator == (const ColMgr& cm) const noexcept {
+				return _broad == cm._broad &&
+						_resmgr == cm._resmgr &&
+						_time == cm._time &&
+						_swHist == cm._swHist &&
+						_hist == cm._hist;
 			}
 			Time_t getTime() const {
 				return _time;
