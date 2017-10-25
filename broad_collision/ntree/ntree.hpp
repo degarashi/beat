@@ -431,6 +431,11 @@ namespace beat {
 					_fieldOffset(fofs),
 					_getBV(f)
 				{}
+				void clear() {
+					_mapper.clear();
+					_cache.clear();
+					_ptrToId.clear();
+				}
 				//! デバッグ用
 				bool operator == (const _NTree& nt) const noexcept {
 					// _ptrToId, _cacheは中身の比較をしない
@@ -466,9 +471,6 @@ namespace beat {
 							cache.mortonId = MergeMortonId(mid.first, mid.second);
 						}
 					}
-				}
-				void clear() {
-					_mapper.clear();
 				}
 				IDType add(void* pObj, const CMask mask) {
 					_addObject(mask, pObj, true);

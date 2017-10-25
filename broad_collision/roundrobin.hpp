@@ -64,7 +64,11 @@ namespace beat {
 			RoundRobin(const GetBV_SP<BVolume>& getbv, float /*fieldSize*/, float /*fieldOfs*/):
 				_getBV(getbv)
 			{}
-			// デバッグ用
+			void clear() {
+				for(auto& n : _node)
+					n.clear();
+			}
+			//! デバッグ用
 			bool operator == (const RoundRobin& r) const noexcept {
 				// _getBVは比較しない
 				for(int i=0 ; i<NumType ; i++) {
