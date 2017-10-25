@@ -103,6 +103,8 @@ namespace beat {
 		private:
 			using CTGeo = typename Types::CTGeo;
 			using IModel = typename Types::IModel;
+			using ITf = typename Types::ITf;
+			using TfLeaf_base = typename Types::TfLeaf_base;
 			using GJK = typename Types::GJK;
 
 			constexpr static int WideBits = lubee::bit::MSB(CTGeo::size) + 1,
@@ -190,6 +192,19 @@ namespace beat {
 					}
 				}
 				return false;
+			}
+			static bool EqualTree(const ITf* i0, const ITf* i1) {
+				return spi::CompareTree(*i0, *i1,
+					[](const ITf& p0, const ITf& p1){
+						if(!p0.im_isLeaf() || !p1.im_isLeaf())
+							return true;
+						const auto &leaf0 = dynamic_cast<const TfLeaf_base&>(p0),
+									&leaf1 = dynamic_cast<const TfLeaf_base&>(p1);
+						const auto mdl0 = leaf0.getModel(),
+									mdl1 = leaf1.getModel();
+						return mdl0->im_getCID() == mdl1->im_getCID();
+					}
+				);
 			}
 	};
 	template <class Types>

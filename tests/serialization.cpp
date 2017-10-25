@@ -1,4 +1,5 @@
 #include "model_serialization.hpp"
+#include "../narrow.hpp"
 
 namespace beat {
 	namespace g2 {
@@ -53,17 +54,7 @@ namespace beat {
 
 			struct Cmp {
 				bool operator()(const ITf& i0, const ITf& i1) const {
-					return spi::CompareTree(i0, i1,
-						[](const ITf& p0, const ITf& p1){
-							if(!p0.im_isLeaf() || !p1.im_isLeaf())
-								return true;
-							const auto &leaf0 = dynamic_cast<const TfLeaf<>&>(p0),
-										&leaf1 = dynamic_cast<const TfLeaf<>&>(p1);
-							const auto mdl0 = leaf0.getModel(),
-										mdl1 = leaf1.getModel();
-							return mdl0->im_getCID() == mdl1->im_getCID();
-						}
-					);
+					return g2::Types::Narrow::EqualTree(&i0, &i1);
 				}
 			};
 			lubee::CheckSerialization(root, Cmp());

@@ -110,10 +110,12 @@ namespace beat {
 
 		class ITf;
 		class GSimplex;
+		class TfLeaf_base;
 		struct Types {
 			using CTGeo = CTGeo;
 			using IModel = IModel;
 			using ITf = ITf;
+			using TfLeaf_base = TfLeaf_base;
 			using GJK = GSimplex;
 			using Narrow = ::beat::Narrow<Types>;
 		};
