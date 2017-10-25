@@ -396,6 +396,7 @@ namespace beat {
 					const auto id2Cache = [this](const NS_Id id) -> decltype(auto) {
 						return _getCache(id);
 					};
+					// 同じIdが二度登場しないかのチェック
 					const auto chkUnique = [&set](const NS_Id id){
 						Assert(set.count(id)==0, "self-check failed");
 						set.insert(id);
@@ -404,6 +405,14 @@ namespace beat {
 						if(_mapper.hasEntry(i)) {
 							auto& cell0 = _mapper.getEntry(i);
 							cell0.debug_Iterate(chkUnique);
+							// 正しい位置のセルに格納されてるかのチェック
+							const auto chkPosition = [expect=i, &id2Cache](const NS_Id id){
+								auto& c = id2Cache(id);
+								Assert(expect == int(c.mortonId.value), "self-check failed");
+								const auto m_id = MergeMortonId(c.posMin, c.posMax);
+								Assert(expect == int(m_id.value),  "self-check failed");
+							};
+							cell0.debug_Iterate(chkPosition);
 							for(int j=i+1 ; j<To ; j++) {
 								if(_mapper.hasEntry(j)) {
 									auto& cell1 = _mapper.getEntry(j);
