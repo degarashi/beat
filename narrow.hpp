@@ -4,9 +4,31 @@
 
 namespace beat {
 	using ColFunc = bool (*)(const void*, const void*);
+	using EqualFunc = ColFunc;
 	using Time_t = uint64_t;
 	namespace {
 		namespace narrow {
+			template <class Shape>
+			struct InitSingle0 {
+				static EqualFunc Func() {
+					return [](const auto* p0, const auto* p1) -> bool {
+						const auto *s0 = reinterpret_cast<const Shape*>(p0),
+									*s1 = reinterpret_cast<const Shape*>(p1);
+						return *s0 == *s1;
+					};
+				}
+			};
+			template <class CT, int Cur>
+			struct InitSingle {
+				static void Proc(EqualFunc*& dst) noexcept {
+					*dst-- = InitSingle0<typename CT::template At<Cur>>::Func();
+					InitSingle<CT, Cur-1>::Proc(dst);
+				}
+			};
+			template <class CT>
+			struct InitSingle<CT,-1> {
+				static void Proc(EqualFunc*&) {}
+			};
 			template <class Types>
 			struct Init0 {
 				using CTGeo = typename Types::CTGeo;
@@ -110,6 +132,7 @@ namespace beat {
 			constexpr static int WideBits = lubee::bit::MSB(CTGeo::size) + 1,
 								ArraySize = 1<<(WideBits*2);
 			static ColFunc cs_cfunc[ArraySize];
+			static EqualFunc cs_efunc[CTGeo::size];
 
 			template <class T, class IM>
 			struct IModelWrap : IM {
@@ -166,6 +189,8 @@ namespace beat {
 				constexpr int WideM = (1<<WideBits);
 				ColFunc* cfp = cs_cfunc+ArraySize-1;
 				narrow::InitA<Types, WideM-1, WideM>::Proc(cfp);
+				EqualFunc* efp = cs_efunc + CTGeo::size-1;
+				narrow::InitSingle<CTGeo, CTGeo::size-1>::Proc(efp);
 			}
 			//! 当たり判定を行う関数ポインタを取得
 			static ColFunc GetCFunc(const int id0, const int id1) {
@@ -193,6 +218,30 @@ namespace beat {
 				}
 				return false;
 			}
+			static bool EqualSingle(const IModel* mdl0, const IModel* mdl1) {
+				D_Assert0(!mdl0->im_getInner() && !mdl1->im_getInner());
+				return cs_efunc[mdl0->im_getCID()](mdl0->im_getCore(), mdl1->im_getCore());
+			}
+			static bool Equal(const IModel* mdl0, const IModel* mdl1) {
+				if(mdl0->im_getCID() == mdl1->im_getCID()) {
+					auto in0 = mdl0->im_getInner();
+					auto in1 = mdl1->im_getInner();
+					if(!in0 == !in1)
+						return EqualSingle(mdl0, mdl1);
+					while(in0) {
+						if(!in1)
+							return false;
+						if(!EqualSingle(in0.get(), in1.get()))
+							return false;
+						++in0;
+						++in1;
+					}
+					if(in1)
+						return false;
+					return true;
+				}
+				return false;
+			}
 			static bool EqualTree(const ITf* i0, const ITf* i1) {
 				return spi::CompareTree(*i0, *i1,
 					[](const ITf& p0, const ITf& p1){
@@ -200,15 +249,17 @@ namespace beat {
 							return true;
 						const auto &leaf0 = dynamic_cast<const TfLeaf_base&>(p0),
 									&leaf1 = dynamic_cast<const TfLeaf_base&>(p1);
-						const auto mdl0 = leaf0.getModel(),
-									mdl1 = leaf1.getModel();
-						return mdl0->im_getCID() == mdl1->im_getCID();
+						if(!Equal(leaf0.getModel().get(), leaf1.getModel().get()))
+							return false;
+						return true;
 					}
 				);
 			}
 	};
 	template <class Types>
 	ColFunc Narrow<Types>::cs_cfunc[ArraySize];
+	template <class Types>
+	EqualFunc Narrow<Types>::cs_efunc[CTGeo::size];
 
 	namespace narrow {}
 }

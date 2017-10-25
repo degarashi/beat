@@ -52,9 +52,11 @@ namespace beat {
 			>;
 			const auto root = makeRandomTree<CNode, CLeaf>(64, 8);
 
+			using narrow_t = g2::Types::Narrow;
+			narrow_t::Initialize();
 			struct Cmp {
 				bool operator()(const ITf& i0, const ITf& i1) const {
-					return g2::Types::Narrow::EqualTree(&i0, &i1);
+					return narrow_t::EqualTree(&i0, &i1);
 				}
 			};
 			lubee::CheckSerialization(root, Cmp());
