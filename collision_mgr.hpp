@@ -2,6 +2,7 @@
 #include "spine/resmgr.hpp"
 #include "spine/optional.hpp"
 #include "broad_collision/getbv.hpp"
+#include "narrow.hpp"
 #include <vector>
 
 namespace cereal {
