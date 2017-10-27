@@ -53,6 +53,34 @@ namespace beat {
 					p->tf_setAsChanged();
 				}
 			}
+			using colmgr_sp = std::shared_ptr<colmgr_t>;
+			using ObjV = std::vector<typename colmgr_t::HCol>;
+			struct Scene {
+				colmgr_sp	cm;
+				ObjV		vA,
+							vB;
+			};
+			constexpr static int MaxObj = 32,
+								IdOffsetA = 0x0000,
+								IdOffsetB = 0x1000,
+								IdA = 0x00000001,
+								IdB = 0x80000001;
+			Scene makeRandomScene() {
+				Scene sc{
+					std::make_shared<colmgr_t>(
+						this->genFloat({1.f, 1024.f}),
+						this->genFloat(RangeF{1024.f})
+					),
+					{}, {}
+				};
+				// TypeAを適当に追加
+				// (MSBが0ならTypeA, 目印としてUserData=0x0000)
+				sc.vA = this->makeRandomColTree(*sc.cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
+				// TypeBも適当に追加
+				// (MSBが1ならTypeB 目印としてUserData=0x1000)
+				sc.vB = this->makeRandomColTree(*sc.cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
+				return std::move(sc);
+			}
 		};
 		using BTypes = ::testing::Types<
 			RoundRobin<Circle>,
@@ -61,53 +89,35 @@ namespace beat {
 			ntree::DualNTree<ntree::g2::Dim, ntree::HashMapper, 5>
 		>;
 		TYPED_TEST_CASE(BroadCollision, BTypes);
-
-		namespace {
-			constexpr int MaxObj = 32,
-						IdOffsetA = 0x0000,
-						IdOffsetB = 0x1000,
-						IdA = 0x00000001,
-						IdB = 0x80000001;
-		}
 		// 単体 -> 複数のテスト
 		TYPED_TEST(BroadCollision, Single) {
-			USING(colmgr_t);
 			USING(user_t);
 			USING(narrow_t);
+			using self_t = std::decay_t<decltype(*this)>;
 
-			colmgr_t cm(
-				this->genFloat({1.f, 1024.f}),
-				this->genFloat(RangeF{1024.f})
-			);
-			// TypeAを適当に追加
-			// (MSBが0ならTypeA, 目印としてUserData=0x0000)
-			const auto vA = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
-			// TypeBも適当に追加
-			// (MSBが1ならTypeB 目印としてUserData=0x1000)
-			const auto vB = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
-
+			const auto sc = this->makeRandomScene();
 			const auto spMdl = this->makeRandomTree();
 			// -> TypeA and TypeBと判定
 			using Set = std::unordered_set<user_t>;
 			Set bcAB,
 				bcA;
-			cm.checkCollision(IdA, spMdl, [&bcAB](auto* cp){
+			sc.cm->checkCollision(self_t::IdA, spMdl, [&bcAB](auto* cp){
 				bcAB.insert(cp->getUserData());
 			});
 			// -> TypeAと判定
-			cm.checkCollision(IdB, spMdl, [&bcA](auto* cp){
+			sc.cm->checkCollision(self_t::IdB, spMdl, [&bcA](auto* cp){
 				bcA.insert(cp->getUserData());
 			});
 			// 自前で判定
 			Set diyAB,
 				diyA;
-			for(auto& a : vA) {
+			for(auto& a : sc.vA) {
 				if(narrow_t::Hit(spMdl.get(), a->getModel().get(), 0)) {
 					diyAB.insert(a->getUserData());
 					diyA.insert(a->getUserData());
 				}
 			}
-			for(auto& b : vB) {
+			for(auto& b : sc.vB) {
 				if(narrow_t::Hit(spMdl.get(), b->getModel().get(), 0)) {
 					diyAB.insert(b->getUserData());
 				}
@@ -122,12 +132,7 @@ namespace beat {
 			USING(colmgr_t);
 			USING(narrow_t);
 
-			colmgr_t cm(
-				float(this->genInt({1, 1024})),
-				float(this->genInt(RangeI{1024}))
-			);
-			const auto v0 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdA, IdOffsetA);
-			const auto v1 = this->makeRandomColTree(cm, this->genInt({0, MaxObj}), IdB, IdOffsetB);
+			const auto sc = this->makeRandomScene();
 			using LeafPV = std::vector<TfLeaf_base*>;
 			LeafPV	leaf0, leaf1;
 			{
@@ -142,9 +147,9 @@ namespace beat {
 					}
 					D_Assert0(dp == dst.data() + dst.size());
 				};
-				for(auto& v : v0)
+				for(auto& v : sc.vA)
 					collectLeafObj(leaf0, v->getModel());
-				for(auto& v : v1)
+				for(auto& v : sc.vB)
 					collectLeafObj(leaf1, v->getModel());
 			}
 
@@ -213,14 +218,14 @@ namespace beat {
 
 			// 形状の変数値をシャッフルしながら何回か比較
 			int nShuffle = this->genInt({8, 32});
-			const int nA = v0.size(),
-						nB = v1.size();
+			const int nA = sc.vA.size(),
+						nB = sc.vB.size();
 			while(nShuffle-- > 0) {
 				// 当たり判定クラスによる判定
-				cm.update();
+				sc.cm->update();
 				chmap[0].clear();
-				histToMap(chmap[0], v0);
-				histToMap(chmap[0], v1);
+				histToMap(chmap[0], sc.vA);
+				histToMap(chmap[0], sc.vB);
 
 				// 自前判定
 				{
@@ -229,15 +234,15 @@ namespace beat {
 					ftsw ^= 1;
 					auto& ftCur = ftmap[ftsw];
 					ftCur.clear();
-					const auto time = cm.getTime();
+					const auto time = sc.cm->getTime();
 					for(int i=0 ; i<nA ; i++) {
 						// A -> A
 						for(int j=i+1 ; j<nA ; j++) {
-							checkDIY(ftCur, ftPrev, chmap[1], v0[i], v0[j], time);
+							checkDIY(ftCur, ftPrev, chmap[1], sc.vA[i], sc.vA[j], time);
 						}
 						// A -> B
 						for(int j=0 ; j<nB ; j++) {
-							checkDIY(ftCur, ftPrev, chmap[1], v0[i], v1[j], time);
+							checkDIY(ftCur, ftPrev, chmap[1], sc.vA[i], sc.vB[j], time);
 						}
 					}
 				}
