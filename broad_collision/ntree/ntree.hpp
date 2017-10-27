@@ -62,11 +62,11 @@ namespace beat {
 				};
 
 				Mapper_t		_mapper;
-				const float		_unitWidth,
-								_fieldOffset;
+				float		_unitWidth,
+							_fieldOffset;
 
 				//! BVolumeをvoid*から計算する為にCtorで与えられるファンクタ
-				const GetBV_SP<BVolume> _getBV;
+				GetBV_SP<BVolume> _getBV;
 				using CacheNS = spi::noseq_list<Cache, std::allocator<Cache>, NS_Id>;
 				CacheNS			_cache;
 

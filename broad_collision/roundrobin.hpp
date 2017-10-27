@@ -43,7 +43,7 @@ namespace beat {
 			using Nodes = spi::noseq_list<Node, std::allocator<Node>, NS_id>;
 			Nodes			_node[NumType];
 			// 境界ボリュームを取得する為の関数
-			const GetBV_SP<BVolume>	_getBV;
+			GetBV_SP<BVolume>	_getBV;
 
 			template <class CB>
 			static bool _Proc(const Node& nd0, const Node& nd1, CB&& cb) {
