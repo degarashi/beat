@@ -28,7 +28,7 @@ namespace beat {
 				std::vector<typename colmgr_t::HCol> ret(n);
 				for(int i=0 ; i<n ; i++) {
 					const auto sp = makeRandomTree();
-					ret[i] = dst.addCol(mask, sp, ud++);
+					ret[i] = std::dynamic_pointer_cast<typename colmgr_t::CMem>(dst.addCol(mask, sp, ud++));
 				}
 				return ret;
 			}

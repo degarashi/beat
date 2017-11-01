@@ -15,25 +15,25 @@ namespace beat {
 			using Set = std::unordered_set<user_t>;
 			Set bcAB,
 				bcA;
-			sc.cm->checkCollision(self_t::IdA, spMdl, [&bcAB](auto* cp){
-				bcAB.insert(cp->getUserData());
+			sc.cm->checkCollision(self_t::IdA, spMdl.get(), [&bcAB](auto& ud){
+				bcAB.insert(ud);
 			});
 			// -> TypeAと判定
-			sc.cm->checkCollision(self_t::IdB, spMdl, [&bcA](auto* cp){
-				bcA.insert(cp->getUserData());
+			sc.cm->checkCollision(self_t::IdB, spMdl.get(), [&bcA](auto& ud){
+				bcA.insert(ud);
 			});
 			// 自前で判定
 			Set diyAB,
 				diyA;
 			for(auto& a : sc.vA) {
 				if(narrow_t::Hit(spMdl.get(), a->getModel().get(), 0)) {
-					diyAB.insert(a->getUserData());
-					diyA.insert(a->getUserData());
+					diyAB.insert(a->refUserData());
+					diyA.insert(a->refUserData());
 				}
 			}
 			for(auto& b : sc.vB) {
 				if(narrow_t::Hit(spMdl.get(), b->getModel().get(), 0)) {
-					diyAB.insert(b->getUserData());
+					diyAB.insert(b->refUserData());
 				}
 			}
 			// 2つの結果を比較
@@ -62,16 +62,16 @@ namespace beat {
 					D_Assert0(dp == dst.data() + dst.size());
 				};
 				for(auto& v : sc.vA)
-					collectLeafObj(leaf0, v->getModel());
+					collectLeafObj(leaf0, std::dynamic_pointer_cast<ITf>(v->getModel()));
 				for(auto& v : sc.vB)
-					collectLeafObj(leaf1, v->getModel());
+					collectLeafObj(leaf1, std::dynamic_pointer_cast<ITf>(v->getModel()));
 			}
 
 			using HCol = typename colmgr_t::HCol;
 			// CollisionManagerを使わずに判定した結果の格納
 			const auto checkDIY = [](auto& ftCur, const auto& ftPrev, auto& ch, const HCol& hc0, const HCol& hc1, const Time_t t){
-				const uint32_t id0 = hc0->getUserData(),
-								id1 = hc1->getUserData();
+				const uint32_t id0 = hc0->refUserData(),
+								id1 = hc1->refUserData();
 				const uint32_t idp0 = (id0 << 16) | id1,
 								idp1 = (id1 << 16) | id0;
 				const auto idpair = std::make_tuple(id0,id1);
@@ -116,14 +116,14 @@ namespace beat {
 			// (衝突が終了した場合は-1)
 			const auto histToMap = [](auto& ch, const auto& vl){
 				for(auto& obj : vl) {
-					const uint32_t id = obj->getUserData() << 16;
-					obj->getCollision([&ch, id](const auto& hist){
-						const auto id2 = id | hist.hCol->getUserData();
+					const uint32_t id = obj->refUserData() << 16;
+					obj->getCollision([&ch, id](const auto& ud, const int nf){
+						const auto id2 = id | ud;
 						ASSERT_EQ(0, ch.count(id2));
-						ch[id2] = hist.nFrame;
+						ch[id2] = nf;
 					});
-					obj->getEndCollision([&ch, id](const auto& hist){
-						const auto id2 = id | hist.hCol->getUserData();
+					obj->getEndCollision([&ch, id](const auto& ud, const int nf){
+						const auto id2 = id | ud;
 						ASSERT_EQ(0, ch.count(id2));
 						ch[id2] = -1;
 					});

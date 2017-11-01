@@ -15,81 +15,124 @@ namespace beat {
 	using Time_t = uint64_t;
 	using Int_OP = spi::Optional<int>;
 
-	struct ColMem_Index {
-		Time_t	time;	//!< indexが指している累積時間
-		Int_OP	front,	//!< 線形リスト先頭インデックス
-				last;	//!< 線形リスト末尾インデックス
+	namespace colmgr_detail {
+		struct ColMem_Index {
+			Time_t	time;	//!< indexが指している累積時間
+			Int_OP	front,	//!< 線形リスト先頭インデックス
+					last;	//!< 線形リスト末尾インデックス
 
-		ColMem_Index() = default;
-		//! リストに何もつないでない状態に初期化
-		ColMem_Index(const Time_t tm):
-			time(tm)
-		{}
-		//! リスト末尾に新しくインデックスを加える
-		/*!	\param[in] idx 新しく加えるインデックス値
-			\return 直前の先頭インデックス値 */
-		Int_OP setLastIndex(const int idx) {
-			const Int_OP ret = last;
-			if(!front)
-				front = last = idx;
-			else
-				last = idx;
-			return ret;
-		}
+			ColMem_Index() = default;
+			//! リストに何もつないでない状態に初期化
+			ColMem_Index(const Time_t tm):
+				time(tm)
+			{}
+			//! リスト末尾に新しくインデックスを加える
+			/*!	\param[in] idx 新しく加えるインデックス値
+				\return 直前の先頭インデックス値 */
+			Int_OP setLastIndex(const int idx) {
+				const Int_OP ret = last;
+				if(!front)
+					front = last = idx;
+				else
+					last = idx;
+				return ret;
+			}
 
-		bool operator == (const ColMem_Index& idx) const noexcept {
-			return time == idx.time &&
-					front == idx.front &&
-					last == idx.last;
-		}
+			bool operator == (const ColMem_Index& idx) const noexcept {
+				return time == idx.time &&
+						front == idx.front &&
+						last == idx.last;
+			}
+		};
+		template <class BCId, class Hist>
+		struct IColMgr {
+			using CBHist = std::function<void (const Hist&)>;
+			virtual Time_t getTime() const noexcept = 0;
+			virtual void iterateHistCur(int idx, const CBHist& cb) const = 0;
+			virtual void iterateHistPrev(int idx, const CBHist& cb) const = 0;
+			virtual void deleteBCID(BCId id) = 0;
+		};
+		// 単方向リスト要素
+		template <class HC>
+		struct ColMgr_Hist {
+			HC		hCol;
+			int		nFrame;				//!< 衝突継続したフレーム数
+			int		nextOffset;			//!< 次のエントリへのバイトオフセット
+
+			ColMgr_Hist() = default;
+			ColMgr_Hist(const HC& hc, const int nf):
+				hCol(hc),
+				nFrame(nf),
+				nextOffset(0)
+			{}
+
+			//! デバッグ用
+			bool operator == (const ColMgr_Hist& h) const noexcept {
+				// hColは比較しない
+				return nFrame == h.nFrame &&
+						nextOffset == h.nextOffset;
+			}
+		};
+		struct ColMgr_Preamble {
+			float	fsize,
+					fofs;
+
+			bool operator == (const ColMgr_Preamble& p) const noexcept {
+				return fsize == p.fsize &&
+						fofs == p.fofs;
+			}
+		};
+	}
+	template <class UD>
+	struct CMBase {
+		using user_t = UD;
+		using cb_t = std::function<void (user_t&, int)>;
+		virtual user_t& refUserData() const noexcept = 0;
+		virtual void getCollision(const cb_t& cb) const = 0;
+		virtual void getEndCollision(const cb_t& cb) const = 0;
 	};
-	template <class BCId, class Hist>
+	template <class UD>
+	using CMBase_SP = std::shared_ptr<CMBase<UD>>;
+	template <class UD>
+	using CMBase_WP = std::weak_ptr<CMBase<UD>>;
+
+	template <class MDL, class UD>
 	struct IColMgr {
-		using CBHist = std::function<void (const Hist&)>;
+		using user_t = UD;
+		using cb_t = typename CMBase<user_t>::cb_t;
+		using cb1_t = std::function<void (user_t&)>;
+		using mdl_t = MDL;
+		using mdl_sp = std::shared_ptr<mdl_t>;
+		using cmbase_sp = CMBase_SP<user_t>;
+
 		virtual Time_t getTime() const noexcept = 0;
-		virtual void iterateHistCur(int idx, const CBHist& cb) const = 0;
-		virtual void iterateHistPrev(int idx, const CBHist& cb) const = 0;
-		virtual void deleteBCID(BCId id) = 0;
+		virtual void selfCheck() const = 0;
+		virtual cmbase_sp addCol(CMask mask, const mdl_sp& mdl, const user_t& ud) = 0;
+		virtual void checkCollision(CMask mask, const mdl_t* mdl, const cb1_t& cb) = 0;
 	};
-	// 単方向リスト要素
-	template <class HC>
-	struct ColMgr_Hist {
-		HC		hCol;
-		int		nFrame;				//!< 衝突継続したフレーム数
-		int		nextOffset;			//!< 次のエントリへのバイトオフセット
 
-		ColMgr_Hist() = default;
-		ColMgr_Hist(const HC& hc, const int nf):
-			hCol(hc),
-			nFrame(nf),
-			nextOffset(0)
-		{}
-
-		//! デバッグ用
-		bool operator == (const ColMgr_Hist& h) const noexcept {
-			// hColは比較しない
-			return nFrame == h.nFrame &&
-					nextOffset == h.nextOffset;
-		}
-	};
 	/*! コリジョン情報を纏めた構造体
 		\tparam MDL		モデルインタフェース(shared_ptr)
 		\tparam BCID	BroadCollisionクラスのオブジェクトを特定できるようなデータ型
 		\tparam UD		任意のユーザーデータ型
 	*/
 	template <class MDL, class BCID, class UD>
-	class ColMem : public std::enable_shared_from_this<ColMem<MDL,BCID,UD>> {
+	class ColMem : public CMBase<UD>,
+					public std::enable_shared_from_this<ColMem<MDL,BCID,UD>>
+	{
 		private:
-			using ICM = IColMgr<BCID, ColMgr_Hist<std::shared_ptr<ColMem>>>;
+			using user_t = UD;
+			using cb_t = typename CMBase<UD>::cb_t;
+			using ICM = colmgr_detail::IColMgr<BCID, colmgr_detail::ColMgr_Hist<std::shared_ptr<ColMem>>>;
 			ICM*		_cmgr;
 			//! 当たり判定対象フラグ
 			CMask		_mask;
-			using Index_OP = spi::Optional<ColMem_Index>;
+			using Index_OP = spi::Optional<colmgr_detail::ColMem_Index>;
 			Index_OP	_cur,
 						_prev;
 			MDL			_spMdl;
 			BCID		_bcid;
-			UD			_udata;
+			mutable user_t	_udata;
 
 			template <class Ar, class M, class B, class U>
 			friend void serialize(Ar&, ColMem<M,B,U>&);
@@ -128,29 +171,26 @@ namespace beat {
 			CMask getMask() const {
 				return _mask;
 			}
-			UD& refUserData() {
-				return _udata;
-			}
-			const UD& getUserData() const {
+			user_t& refUserData() const noexcept override {
 				return _udata;
 			}
 			//! 衝突判定履歴を巡回 (コリジョン開始 / 継続中の判定)
-			/*! \param cb[in,out] コールバック(CMgr::Hist) */
-			template <class CB>
-			void getCollision(CB&& cb) const {
+			/*! \param cb[in,out] コールバック */
+			void getCollision(const cb_t& cb) const override {
 				const Time_t tm = _cmgr->getTime();
 				if(_cur) {
 					auto& cur = *_cur;
 					// 現在の時刻と等しい時に巡回
 					if(cur.time == tm) {
-						_cmgr->iterateHistCur(*cur.front, cb);
+						_cmgr->iterateHistCur(*cur.front, [&cb](auto& hCur){
+							cb(hCur.hCol->refUserData(), hCur.nFrame);
+						});
 					}
 				}
 			}
 			//! 衝突判定結果を参照 (コリジョン終了判定)
-			/*! \param cb[in,out] コールバック(CMgr::Hist) */
-			template <class CB>
-			void getEndCollision(CB&& cb) const {
+			/*! \param cb[in,out] コールバック */
+			void getEndCollision(const cb_t& cb) const override {
 				const Time_t tm = _cmgr->getTime();
 				if(_prev && _prev->time == tm-1) {
 					if(_cur->time == tm) {
@@ -166,7 +206,7 @@ namespace beat {
 								}
 							});
 							if(!bFound) {
-								cb(hPrev);
+								cb(hPrev.hCol->refUserData(), hPrev.nFrame);
 							}
 						});
 					}
@@ -174,7 +214,9 @@ namespace beat {
 				if(_cur && _cur->time == tm-1) {
 					// 今回何とも衝突しなかった場合
 					// _cur のリスト全部対象。ただし履歴はColMgr上では過去のものになってるのでPrevを参照
-					_cmgr->iterateHistPrev(*_cur->front, cb);
+					_cmgr->iterateHistPrev(*_cur->front, [&cb](const auto& hPrev){
+						cb(hPrev.hCol->refUserData(), hPrev.nFrame);
+					});
 				}
 			}
 			//! 引数の時刻-1と合致する方のリストインデックス先頭を取得
@@ -201,33 +243,25 @@ namespace beat {
 			}
 	};
 
-	struct ColMgr_Preamble {
-		float	fsize,
-				fofs;
-
-		bool operator == (const ColMgr_Preamble& p) const noexcept {
-			return fsize == p.fsize &&
-					fofs == p.fofs;
-		}
-	};
 	/*!
 		\tparam	BC		BroadCollision
 		\tparam	Types	g2::Types or g3::Types
 		\tparam UD		userdata type
 	*/
 	template <class BC, class Types, class UD>
-	class ColMgr : public IColMgr<
+	class ColMgr : public colmgr_detail::IColMgr<
 							typename BC::IDType,
-							ColMgr_Hist<
+							colmgr_detail::ColMgr_Hist<
 								std::shared_ptr<
 									ColMem<
-										std::shared_ptr<typename Types::ITf>,
+										std::shared_ptr<typename Types::IModel>,
 										typename BC::IDType,
 										UD
 									>
 								>
 							>
-						>
+						>,
+					public IColMgr<typename Types::IModel, UD>
 	{
 		public:
 			using user_t = UD;														//!< Userdata
@@ -236,21 +270,24 @@ namespace beat {
 			using IModel = typename Types::IModel;
 			using BVolume = typename broad_t::BVolume;								//!< Bounding-volume
 			using BCId = typename broad_t::IDType;									//!< BroadCollision dependant Id
+			using base_t = IColMgr<IModel, user_t>;
 			// ---- model interface type ----
-			using Mdl_SP = std::shared_ptr<ITf>;
+			using Mdl_SP = std::shared_ptr<IModel>;
 			using CMem = ColMem<Mdl_SP, BCId, user_t>;								//!< Collision information structure
 			using HCol = std::shared_ptr<CMem>;
+			using HColBase = CMBase_SP<user_t>;
 			using WCol = std::weak_ptr<CMem>;
+			using WColBase = CMBase_WP<user_t>;
 			using resmgr_t = spi::ResMgr<CMem>;
 
 		private:
 			using Narrow = typename Types::Narrow;
-			using Hist = ColMgr_Hist<std::shared_ptr<CMem>>;
+			using Hist = colmgr_detail::ColMgr_Hist<std::shared_ptr<CMem>>;
 			using HistV = std::vector<Hist>;
 			using Hist_OP = spi::Optional<const Hist&>;
 			using CBHist = std::function<void (const Hist&)>;
 
-			ColMgr_Preamble		_preamble;
+			colmgr_detail::ColMgr_Preamble	_preamble;
 			broad_t				_broad;
 			resmgr_t			_resmgr;
 			Time_t				_time = 0;
@@ -339,7 +376,7 @@ namespace beat {
 			template <class Ar>
 			static void load_and_construct(Ar&, cereal::construct<ColMgr>&);
 
-			ColMgr(const ColMgr_Preamble& p):
+			ColMgr(const colmgr_detail::ColMgr_Preamble& p):
 				_preamble(p),
 				_broad(_makeGetBV(), p.fsize, p.fofs)
 			{
@@ -348,7 +385,7 @@ namespace beat {
 
 		public:
 			ColMgr(const float fieldSize, const float fieldOfs):
-				ColMgr(ColMgr_Preamble{fieldSize, fieldOfs})
+				ColMgr(colmgr_detail::ColMgr_Preamble{fieldSize, fieldOfs})
 			{}
 			void cleanBackup() {
 				_resmgr.cleanBackup();
@@ -365,7 +402,7 @@ namespace beat {
 						_hist[1] == cm._hist[1];
 			}
 			// デバッグ用
-			void selfCheck() const {
+			void selfCheck() const override {
 				_broad.selfCheck();
 			}
 			Time_t getTime() const noexcept override {
@@ -379,9 +416,8 @@ namespace beat {
 			}
 			//! 当たり判定対象を追加
 			/*! \param mask[in] 当たり判定マスク */
-			template <class UD2>
-			HCol addCol(const CMask mask, const Mdl_SP& spMdl, UD2&& ud=user_t()) {
-				HCol hlC = _resmgr.emplace(mask, spMdl, std::forward<UD2>(ud));
+			HColBase addCol(const CMask mask, const Mdl_SP& spMdl, const user_t& ud=user_t()) override {
+				HCol hlC = _resmgr.emplace(mask, spMdl, ud);
 				hlC->setBCID(this, _broad.add(hlC.get(), mask));
 				D_Assert(spMdl->im_refresh(_time), "empty object detected");
 				return hlC;
@@ -395,25 +431,20 @@ namespace beat {
 				\param[in] mp		判定対象のモデルポインタ
 				\param[in] cb		コールバック関数(HCol)
 			*/
-			template <class CB>
-			void checkCollision(const CMask mask, const IModel* mp, CB&& cb) {
+			void checkCollision(const CMask mask, const IModel* mp, const typename base_t::cb1_t& cb) override {
 				_broad.refreshBVolume();
 				if(!mp->im_refresh(_time))
 					return;
 				BVolume bv;
 				mp->im_getBVolume(bv);
 				_broad.checkCollision(mask, bv,
-					[time=_time, pMdl=mp, cb=std::forward<CB>(cb)](const void* p) {
+					[time=_time, pMdl=mp, &cb](const void* p) {
 						auto* m = static_cast<const CMem*>(p);
 						// 詳細判定
 						if(Narrow::Hit(pMdl, m->getModel().get(), time))
-							cb(m);
+							cb(m->refUserData());
 					}
 				);
-			}
-			template <class CB>
-			void checkCollision(const CMask mask, const Mdl_SP& spMdl, CB&& cb) {
-				checkCollision(mask, spMdl.get(), std::forward<CB>(cb));
 			}
 			//! 全てのオブジェクトを相互に当たり判定
 			/*!	時間を1進め、衝突履歴の更新
