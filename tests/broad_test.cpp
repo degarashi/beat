@@ -122,7 +122,7 @@ namespace beat {
 						ASSERT_EQ(0, ch.count(id2));
 						ch[id2] = nf;
 					});
-					obj->getEndCollision([&ch, id](const auto& ud, const int nf){
+					obj->getEndCollision([&ch, id](const auto& ud, const int /*nf*/){
 						const auto id2 = id | ud;
 						ASSERT_EQ(0, ch.count(id2));
 						ch[id2] = -1;
