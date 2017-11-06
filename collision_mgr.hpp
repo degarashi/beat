@@ -109,6 +109,8 @@ namespace beat {
 		virtual void selfCheck() const = 0;
 		virtual cmbase_sp addCol(CMask mask, const mdl_sp& mdl, const user_t& ud) = 0;
 		virtual void checkCollision(CMask mask, const mdl_t* mdl, const cb1_t& cb) = 0;
+		virtual void cleanBackup() = 0;
+		virtual void update() = 0;
 	};
 
 	/*! コリジョン情報を纏めた構造体
@@ -387,7 +389,7 @@ namespace beat {
 			ColMgr(const float fieldSize, const float fieldOfs):
 				ColMgr(colmgr_detail::ColMgr_Preamble{fieldSize, fieldOfs})
 			{}
-			void cleanBackup() {
+			void cleanBackup() override {
 				_resmgr.cleanBackup();
 			}
 			// デバッグ用
@@ -452,7 +454,7 @@ namespace beat {
 				\param[in] cb		衝突が検出される度に呼ばれるコールバック関数(CMem*, CMem*)
 				\param[in] bAdvance	trueの時に時刻を進め、新旧の履歴を切り替える
 			*/
-			void update() {
+			void update() override {
 				_switchHist();
 				++_time;
 				_broad.refreshBVolume();
