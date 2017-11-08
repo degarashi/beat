@@ -13,7 +13,7 @@ namespace beat {
 				const auto dir = frea::random::GenVecUnit<Vec2>(rf);
 				const auto d0 = dir.dot(a->im_support(dir)),
 							d1 = dir.dot(b->im_support(dir));
-				D_Assert0(d0 >= d1);
+				Assert0(d0 >= d1);
 			}
 		}
 		void CheckBoundaryTree(const IModel* node, const Time_t t) {
