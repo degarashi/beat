@@ -46,8 +46,10 @@ namespace beat {
 			return getGlobal();
 		}
 		Vec2 TfLeaf_base::im_support(const Vec2& dir) const {
+#ifdef DEBUG
 			auto& sc = getPose().getScaling();
 			D_Assert0(sc.x == sc.y);
+#endif
 			return im_toWorld(getModel()->im_support(im_toLocalDir(dir)));
 		}
 		uint32_t TfLeaf_base::im_getCID() const {
@@ -82,8 +84,10 @@ namespace beat {
 			const auto ret = _rflag.getWithCheck(this, m);
 			if(ret.flag) {
 				auto& ps = *std::get<0>(ret);
+#ifdef DEBUG
 				auto& sc = ps.getScaling();
 				D_Assert0(sc.x == sc.y);
+#endif
 				m = ps.getToWorld().convert<3,2>();
 				return true;
 			}
