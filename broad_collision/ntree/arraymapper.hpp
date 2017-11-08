@@ -27,8 +27,12 @@ namespace beat {
 					}
 					return true;
 				}
+#ifdef DEBUG
 				bool hasEntry(const Morton_t n) const {
 					D_Assert0(n<countof(_ent));
+#else
+				bool hasEntry(const Morton_t /*n*/) const {
+#endif
 					// 配列なので常にエントリは存在する
 					return true;
 				}
@@ -40,9 +44,13 @@ namespace beat {
 					D_Assert0(n<countof(_ent));
 					return _ent[n];
 				}
+#ifdef DEBUG
 				void remEntry(const Morton_t n) {
 					// 固定配列なので削除しない
 					D_Assert0(_ent[n].isEmpty());
+#else
+				void remEntry(const Morton_t /*n*/) {
+#endif
 				}
 				void increment(const Morton_t num) {
 					D_Assert0(_ent[num].getLowerCount() >= 0);
