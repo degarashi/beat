@@ -92,8 +92,12 @@ namespace beat {
 				};
 				// オブジェクト振り分け
 				for(int i=0 ; i<nSrc ; i++) {
+#ifdef DEBUG
 					const int count = Classify(src[i], centerId, cb);
 					D_Assert0(count > 0);
+#else
+					Classify(src[i], centerId, cb);
+#endif
 				}
 			}
 			void Dim::CalcLowerCenterId(Index (&dst)[N_LayerSize], const Index id, const int width) {
