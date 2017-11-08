@@ -162,8 +162,13 @@ namespace beat {
 			}
 			template <class BV>
 			BV getBVolume(const Time_t t) const {
+#ifdef DEBUG
+				const bool b = _spMdl->im_refresh(t);
+				D_Assert0(b);
+#else
+				_spMdl->im_refresh(t);
+#endif
 				BV bv;
-				D_Assert0(_spMdl->im_refresh(t));
 				_spMdl->im_getBVolume(bv);
 				return bv;
 			}
