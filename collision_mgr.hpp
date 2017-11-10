@@ -108,9 +108,9 @@ namespace beat {
 		virtual Time_t getTime() const noexcept = 0;
 		virtual void selfCheck() const = 0;
 		virtual cmbase_sp addCol(CMask mask, const mdl_sp& mdl, const user_t& ud) = 0;
-		virtual void checkCollision(CMask mask, const mdl_t* mdl, const cb1_t& cb) = 0;
+		virtual uint32_t checkCollision(CMask mask, const mdl_t* mdl, const cb1_t& cb) = 0;
 		virtual void cleanBackup() = 0;
-		virtual void update() = 0;
+		virtual uint32_t update() = 0;
 	};
 
 	/*! コリジョン情報を纏めた構造体
@@ -437,14 +437,15 @@ namespace beat {
 				\param[in] mask		コリジョンマスク値
 				\param[in] mp		判定対象のモデルポインタ
 				\param[in] cb		コールバック関数(HCol)
+				\return				BroadPhaseでのコリジョン判定回数(境界ボリューム含まず)
 			*/
-			void checkCollision(const CMask mask, const IModel* mp, const typename base_t::cb1_t& cb) override {
+			uint32_t checkCollision(const CMask mask, const IModel* mp, const typename base_t::cb1_t& cb) override {
 				_broad.refreshBVolume();
 				if(!mp->im_refresh(_time))
-					return;
+					return 0;
 				BVolume bv;
 				mp->im_getBVolume(bv);
-				_broad.checkCollision(mask, bv,
+				return _broad.checkCollision(mask, bv,
 					[time=_time, pMdl=mp, &cb](const void* p) {
 						auto* m = static_cast<const CMem*>(p);
 						// 詳細判定
@@ -458,13 +459,14 @@ namespace beat {
 				A->Bの組み合わせでコールバックを呼び、B->Aは呼ばない
 				\param[in] cb		衝突が検出される度に呼ばれるコールバック関数(CMem*, CMem*)
 				\param[in] bAdvance	trueの時に時刻を進め、新旧の履歴を切り替える
+				\return				BroadPhaseでのコリジョン判定回数(境界ボリューム含まず)
 			*/
-			void update() override {
+			uint32_t update() override {
 				_switchHist();
 				++_time;
 				_broad.refreshBVolume();
 				// advance時, フレームヒットリストを再構築
-				_broad.broadCollision([this](void* p0, void* p1){
+				return _broad.broadCollision([this](void* p0, void* p1){
 					// 同じオブジェクトという事はあり得ない筈
 					D_Assert0(p0 != p1);
 					auto* cm0 = static_cast<CMem*>(p0);
