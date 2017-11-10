@@ -72,20 +72,20 @@ namespace beat {
 						auto* from = std::get<0>(obj);
 						auto* to = from + std::get<1>(obj);
 						// Objリストとブロック内Objとの判定
-						count += base_t::_HitCheck(from, to, ol, fnChk, fnNtf);
+						count += base_t::_HitCheck(from, to, ol.cbegin(), ol.cend(), fnChk, fnNtf);
 						// ObjリストとマップObjとの判定
-						count += base_t::_HitCheck(from, to, ml, fnChk, fnNtf);
+						count += base_t::_HitCheck(from, to, ml.cbegin(), ml.cend(), fnChk, fnNtf);
 					}
 					{
 						const auto obj = stk.getMap();
 						auto* from = std::get<0>(obj);
 						auto* to = from + std::get<1>(obj);
-						count += base_t::_HitCheck(from, to, ol, fnChk, fnNtf);
+						count += base_t::_HitCheck(from, to, ol.cbegin(), ol.cend(), fnChk, fnNtf);
 					}
 					if(!ol.empty() && !ml.empty())
-						count += base_t::_HitCheck(ol.cbegin(), ol.cend(), ml, fnChk, fnNtf);
+						count += base_t::_HitCheck(ol.cbegin(), ol.cend(), ml.cbegin(), ml.cend(), fnChk, fnNtf);
 					// ブロック内Obj同士の判定
-					count += base_t::_HitCheck(ol, fnChk, fnNtf);
+					count += base_t::_HitCheck(ol.cbegin(), ol.cend(), fnChk, fnNtf);
 					return count;
 				}
 			public:

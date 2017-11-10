@@ -245,31 +245,38 @@ namespace beat {
 				}
 			protected:
 				//! リスト総当たり判定
-				template <class Itr, class T1, class Chk, class Notify>
-				static uint32_t _HitCheck(Itr itr0, const Itr itrE0, const T1& oL1, const Chk& chk, const Notify& ntf) {
+				template <class Itr0, class Itr1, class Chk, class Notify>
+				static uint32_t _HitCheck(
+					Itr0 itr0, const Itr0 itrE0,
+					const Itr1 itr1B, const Itr1 itr1E,
+					const Chk& chk, const Notify& ntf
+				) {
 					uint32_t count = 0;
 					while(itr0 != itrE0) {
 						auto& o0 = *itr0;
-						for(auto& o1 : oL1) {
+						for(auto itr1=itr1B ; itr1!=itr1E ; ++itr1) {
+							auto& o1 = *itr1;
 							if(chk(o0, o1)) {
 								// 通知など
 								ntf(o0, o1);
 							}
 						}
 						++itr0;
-						count += oL1.size();
+						count += itr1E-itr1B;
 					}
 					return count;
 				}
 				//! 1つのリスト内で当たり判定
-				template <class T0, class Chk, class Notify>
-				static uint32_t _HitCheck(const T0& oL0, const Chk& chk, const Notify& ntf) {
+				template <class Itr0, class Chk, class Notify>
+				static uint32_t _HitCheck(
+					const Itr0 itr0B, const Itr0 itr0E,
+					const Chk& chk, const Notify& ntf
+				) {
 					uint32_t count = 0;
-					const auto itrE = oL0.cend();
-					for(auto itr0=oL0.cbegin() ; itr0!=itrE ; ++itr0) {
+					for(auto itr0=itr0B ; itr0!=itr0E ; ++itr0) {
 						auto itr1=itr0;
 						++itr1;
-						for( ; itr1!=itrE ; ++itr1) {
+						for( ; itr1!=itr0E ; ++itr1) {
 							++count;
 							if(chk(*itr0, *itr1)) {
 								// 通知など
@@ -310,9 +317,9 @@ namespace beat {
 									&c1 = _getCache(v1.id);
 						return (c0.mask & c1.mask) && c0.bvolume.hit(c1.bvolume);
 					};
-					uint32_t count = _HitCheck(bgn, bgn+nObj, ol, fnChk, fnNtf);
+					uint32_t count = _HitCheck(bgn, bgn+nObj, ol.cbegin(), ol.cend(), fnChk, fnNtf);
 					// ブロック内同士の判定
-					count += _HitCheck(ol, fnChk, fnNtf);
+					count += _HitCheck(ol.cbegin(), ol.cend(), fnChk, fnNtf);
 					return count;
 				}
 				const Cache& _getCache(NS_Id cid) const {
