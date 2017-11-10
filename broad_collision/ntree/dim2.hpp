@@ -45,12 +45,12 @@ namespace beat {
 									N_LayerSize = (1 << N_Dim);
 				using BVolume = ::beat::g2::AABB;
 
-				//! geo2d::IModelからモートンIdを算出
+				//! 境界ボリュームからモートンIdを算出
 				/*!
 					\return first=Min(XY)のモートンId
 							second=Max(XY)のモートンId
 				*/
-				static std::pair<MortonId,MortonId> ToMortonMinMaxId(const BVolume& bv, int nwidth, float unit, float ofs);
+				static std::pair<MortonId,MortonId> ToMortonMinMaxId(const BVolume& bv, int nwidth, float unitInv, float ofs);
 				//! オブジェクトの軸分類
 				/*!
 					\param[out] dst			オブジェクトの振り分け先 (4マス) 重複あり

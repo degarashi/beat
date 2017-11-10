@@ -44,9 +44,9 @@ namespace beat {
 			}
 
 			// ---------------------- Dim ----------------------
-			std::pair<MortonId,MortonId> Dim::ToMortonMinMaxId(const BVolume& bv, const int nwidth, const float unit, const float ofs) {
-				const auto sat = [nwidth,unit,ofs](const float w) -> uint32_t {
-					return lubee::Saturate<int>((w+ofs)*unit, 0, nwidth-1);
+			std::pair<MortonId,MortonId> Dim::ToMortonMinMaxId(const BVolume& bv, const int nwidth, const float unitInv, const float ofs) {
+				const auto sat = [nwidth,unitInv,ofs](const float w) -> uint32_t {
+					return lubee::Saturate<int>((w+ofs)*unitInv, 0, nwidth-1);
 				};
 				return std::make_pair(Index(sat(bv.min.x), sat(bv.min.y)),
 										Index(sat(bv.max.x), sat(bv.max.y)));

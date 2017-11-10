@@ -62,7 +62,7 @@ namespace beat {
 				};
 
 				Mapper_t		_mapper;
-				float		_unitWidth,
+				float		_unitSizeInv,
 							_fieldOffset;
 
 				//! BVolumeをvoid*から計算する為にCtorで与えられるファンクタ
@@ -437,13 +437,13 @@ namespace beat {
 					_selfCheck(set, lubee::IConst<L-1>());
 				}
 				std::pair<MortonId, MortonId> _toMortonMinMaxId(const BVolume& bv) const {
-					return Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
+					return Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitSizeInv, -_fieldOffset);
 				}
 
 			public:
 				/*! \param[in] fieldSize	当たり判定対象の一片サイズ */
 				_NTree(const GetBV_SP<BVolume>& f, const float fsize, const float fofs):
-					_unitWidth(Mapper_t::N_Width / fsize),
+					_unitSizeInv(1.f / (fsize / Mapper_t::N_Width)),
 					_fieldOffset(fofs),
 					_getBV(f)
 				{}
@@ -456,7 +456,7 @@ namespace beat {
 				bool operator == (const _NTree& nt) const noexcept {
 					// _ptrToId, _cacheは中身の比較をしない
 					return _mapper == nt._mapper &&
-							_unitWidth == nt._unitWidth &&
+							_unitSizeInv == nt._unitSizeInv &&
 							_fieldOffset == nt._fieldOffset &&
 							_cache.size() == nt._cache.size() &&
 							_ptrToId.size() == nt._ptrToId.size();
