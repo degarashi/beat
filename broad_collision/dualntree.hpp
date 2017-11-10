@@ -34,18 +34,18 @@ namespace beat {
 
 			protected:
 				template <class Notify>
-				int _doCollision(const CMask mask, const typename base_t::BVolume& bv, const cell_t& cur, const Notify& ntf) const {
-					int count = 0;
+				uint32_t _doCollision(const CMask mask, const typename base_t::BVolume& bv, const cell_t& cur, const Notify& ntf) const {
+					uint32_t count = 0;
 					const auto fnChk = [&](const auto& v){
 						for(auto& obj : v) {
 							const auto& c = base_t::_getCache(obj.id);
-							if((mask & c.mask) &&
-								bv.hit(c.bvolume))
-							{
-								ntf(c.pObj);
-								++count;
+							if(mask & c.mask) {
+								if(bv.hit(c.bvolume)) {
+									ntf(c.pObj);
+								}
 							}
 						}
+						count += v.size();
 					};
 					fnChk(cur.getObjList());
 					if(!cell_t::IsTypeB(mask))
@@ -53,7 +53,7 @@ namespace beat {
 					return count;
 				}
 				template <class Notify>
-				int _doCollision(const typename cell_t::CellStack& stk, const cell_t& cur, const Notify& ntf) const {
+				uint32_t _doCollision(const typename cell_t::CellStack& stk, const cell_t& cur, const Notify& ntf) const {
 					const auto fnChk = [this](const auto& v0, const auto& v1){
 						const auto	&c0 = base_t::_getCache(v0.id),
 									&c1 = base_t::_getCache(v1.id);
@@ -66,7 +66,7 @@ namespace beat {
 					};
 					const auto &ol = cur.getObjList(),
 								&ml = cur.getMapList();
-					int count = 0;
+					uint32_t count = 0;
 					{
 						const auto obj = stk.getObj();
 						auto* from = std::get<0>(obj);

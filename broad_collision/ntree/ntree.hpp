@@ -74,8 +74,12 @@ namespace beat {
 				//! オブジェクト削除でNS_Idを検索するのに使用
 				PtrToId			_ptrToId;
 
+				//! 境界ボリューム単体との判定
+				/*!
+					\return コリジョン判定回数(境界ボリューム含まず
+				*/
 				template <class Notify>
-				int iterateChk(CMask mask, const BVolume& bv, const Notify& ntf) const {
+				uint32_t iterateChk(CMask mask, const BVolume& bv, const Notify& ntf) const {
 					if(getEntry(0).isEmpty())
 						return 0;
 
@@ -87,7 +91,7 @@ namespace beat {
 						NS_Id(0)
 					};
 
-					int count = 0;
+					uint32_t count = 0;
 					struct Pair {
 						int		toProc;
 						Index	center;
@@ -143,13 +147,15 @@ namespace beat {
 					return count;
 				}
 				//! コリジョン判定の為に木を巡る
-				/*! \return コリジョンと判定された回数 */
+				/*!
+					\return コリジョン判定回数(境界ボリューム含まず
+				*/
 				template <class Notify>
-				int iterate(const Notify& ntf) const {
+				uint32_t iterate(const Notify& ntf) const {
 					if(getEntry(0).isEmpty())
 						return 0;
 
-					int count = 0;
+					uint32_t count = 0;
 					typename this_t::Mapper_t::Entry::CellStack stk;		// 現在持っているオブジェクト集合
 
 					struct Pair {
@@ -240,8 +246,8 @@ namespace beat {
 			protected:
 				//! リスト総当たり判定
 				template <class Itr, class T1, class Chk, class Notify>
-				static int _HitCheck(Itr itr0, const Itr itrE0, const T1& oL1, const Chk& chk, const Notify& ntf) {
-					int count = 0;
+				static uint32_t _HitCheck(Itr itr0, const Itr itrE0, const T1& oL1, const Chk& chk, const Notify& ntf) {
+					uint32_t count = 0;
 					while(itr0 != itrE0) {
 						auto& o0 = *itr0;
 						for(auto& o1 : oL1) {
@@ -257,8 +263,8 @@ namespace beat {
 				}
 				//! 1つのリスト内で当たり判定
 				template <class T0, class Chk, class Notify>
-				static int _HitCheck(const T0& oL0, const Chk& chk, const Notify& ntf) {
-					int count = 0;
+				static uint32_t _HitCheck(const T0& oL0, const Chk& chk, const Notify& ntf) {
+					uint32_t count = 0;
 					const auto itrE = oL0.cend();
 					for(auto itr0=oL0.cbegin() ; itr0!=itrE ; ++itr0) {
 						auto itr1=itr0;
@@ -274,21 +280,21 @@ namespace beat {
 					return count;
 				}
 				template <class Notify>
-				int _doCollision(const CMask mask, const BVolume& bv, const Cell_t& cur, const Notify& ntf) const {
-					int count = 0;
+				uint32_t _doCollision(const CMask mask, const BVolume& bv, const Cell_t& cur, const Notify& ntf) const {
+					uint32_t count = 0;
 					for(const auto& obj : cur.getObjList()) {
 						const auto& c = _getCache(obj.id);
-						if((mask & c.mask) &&
-							bv.hit(c.bvolume))
-						{
-							ntf(c.pObj);
+						if(mask & c.mask) {
 							++count;
+							if(bv.hit(c.bvolume)) {
+								ntf(c.pObj);
+							}
 						}
 					}
 					return count;
 				}
 				template <class Notify>
-				int _doCollision(const typename Cell_t::CellStack& stk, const Cell_t& cur, const Notify& ntf) const {
+				uint32_t _doCollision(const typename Cell_t::CellStack& stk, const Cell_t& cur, const Notify& ntf) const {
 					const auto& ol = cur.getObjList();
 					// Objリストとブロック内Objとの判定
 					auto ret = stk.getObj();
@@ -304,7 +310,7 @@ namespace beat {
 									&c1 = _getCache(v1.id);
 						return (c0.mask & c1.mask) && c0.bvolume.hit(c1.bvolume);
 					};
-					int count = _HitCheck(bgn, bgn+nObj, ol, fnChk, fnNtf);
+					uint32_t count = _HitCheck(bgn, bgn+nObj, ol, fnChk, fnNtf);
 					// ブロック内同士の判定
 					count += _HitCheck(ol, fnChk, fnNtf);
 					return count;
@@ -480,11 +486,11 @@ namespace beat {
 					_remObject(idt, true);
 				}
 				template <class CB>
-				void checkCollision(const CMask mask, const BVolume& bv, CB&& cb) {
-					iterateChk(mask, bv, std::forward<CB>(cb));
+				uint32_t checkCollision(const CMask mask, const BVolume& bv, CB&& cb) {
+					return iterateChk(mask, bv, std::forward<CB>(cb));
 				}
 				template <class CB>
-				int broadCollision(CB&& cb) {
+				uint32_t broadCollision(CB&& cb) {
 					return iterate(std::forward<CB>(cb));
 				}
 		};
