@@ -18,7 +18,7 @@ set_target_properties(beat PROPERTIES VERSION 0.0.1 SOVERSION 0)
 install(TARGETS beat LIBRARY DESTINATION lib)
 
 # ------ テストコード生成 ------
-if(NOT without-test)
+if(NOT without-unittest)
 	enable_testing()
 
 	include(aux.cmake)
