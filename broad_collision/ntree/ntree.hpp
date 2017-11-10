@@ -83,7 +83,7 @@ namespace beat {
 					if(getEntry(0).isEmpty())
 						return 0;
 
-					const auto mid = Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
+					const auto mid = _toMortonMinMaxId(bv);
 
 					VolumeEntry ve{
 						mid.first.asIndex(),
@@ -338,7 +338,7 @@ namespace beat {
 				MortonId _addObject(const CMask mask, void* pObj, const bool bAddPtr) {
 					D_Assert0(pObj);
 					const auto bv = (*_getBV)(pObj);
-					const auto mid = Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
+					const auto mid = _toMortonMinMaxId(bv);
 					const MortonId num = MergeMortonId(mid.first, mid.second);
 					NS_Id cid;
 					if(bAddPtr) {
@@ -436,6 +436,9 @@ namespace beat {
 					}
 					_selfCheck(set, lubee::IConst<L-1>());
 				}
+				std::pair<MortonId, MortonId> _toMortonMinMaxId(const BVolume& bv) const {
+					return Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
+				}
 
 			public:
 				/*! \param[in] fieldSize	当たり判定対象の一片サイズ */
@@ -469,7 +472,7 @@ namespace beat {
 					for(auto& m : _ptrToId) {
 						// 新しくBVolumeを計算
 						const auto bv = bvf(m.first);
-						const auto mid = Dim_t::ToMortonMinMaxId(bv, Mapper_t::N_Width, _unitWidth, _fieldOffset);
+						const auto mid = _toMortonMinMaxId(bv);
 						const auto idx0 = mid.first.asIndex(),
 									idx1 = mid.second.asIndex();
 						auto& cache = _cache.get(m.second);
