@@ -18,7 +18,7 @@ namespace beat {
 			constexpr static int ObjIter = 12,
 								ObjDepth = 2;
 			using ObjNodeT = lubee::Types<AABB>;
-			using ObjLeafT = ObjNodeT;
+			using ObjLeafT = lubee::Types<Point, AABB>;
 
 			auto makeRandomTree() {
 				return TreeGenerator::makeRandomTree<ObjNodeT, ObjLeafT>(ObjIter, ObjDepth);
@@ -39,6 +39,9 @@ namespace beat {
 				if(genInt({0,1}) == 0) {
 					void* ms = p->getModel()->im_getCore();
 					switch(p->im_getCID()) {
+						case Point::GetCID():
+							genShape(*static_cast<Point*>(ms));
+							break;
 						case Circle::GetCID():
 							genShape(*static_cast<Circle*>(ms));
 							break;
