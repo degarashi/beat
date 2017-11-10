@@ -74,6 +74,11 @@ namespace beat {
 				//! オブジェクト削除でNS_Idを検索するのに使用
 				PtrToId			_ptrToId;
 
+				struct ToSearch {
+					int		cellId;		// 捜査対象のセルId (-2 == 一段上へ)
+					Index	center;		// 捜査対象のマス目中央位置
+				};
+				using ToSearchStk = std::stack<ToSearch>;
 				//! 境界ボリューム単体との判定
 				/*!
 					\return コリジョン判定回数(境界ボリューム含まず
@@ -84,34 +89,31 @@ namespace beat {
 						return 0;
 
 					const auto mid = _toMortonMinMaxId(bv);
-
-					VolumeEntry ve{
+					const VolumeEntry ve{
 						mid.first.asIndex(),
 						mid.second.asIndex(),
 						NS_Id(0)
 					};
 
 					uint32_t count = 0;
-					struct Pair {
-						int		toProc;
-						Index	center;
-					};
-					std::stack<Pair> stkId;
+					ToSearchStk stkId;
+
 					// ルートノードをプッシュ
 					int curWidth = this_t::Mapper_t::N_Width/2;		// 現在の走査幅 (常に2の乗数)
-					stkId.push(Pair{0, Index(curWidth, curWidth)});
+					stkId.push(ToSearch{0, Index(curWidth, curWidth)});
 					while(!stkId.empty()) {
 						auto p = stkId.top();
 						stkId.pop();
-						if(p.toProc < 0) {
-							if(p.toProc == -2) {
+						if(p.cellId < 0) {
+							if(p.cellId == -2) {
+								// 階層を一段上がる
 								curWidth *= 2;
 								if(curWidth == 0)
 									curWidth = 1;
 							}
 							continue;
 						}
-						const auto& curEnt = getEntry(p.toProc);
+						const auto& curEnt = getEntry(p.cellId);
 						// 判定を行うかの判断 (assert含む)
 						if(!curEnt.isNodeEmpty()) {
 							count += static_cast<const this_t&>(*this)._doCollision(mask, bv, curEnt, ntf);
@@ -120,22 +122,28 @@ namespace beat {
 						}
 						// 下に枝があればそれを処理
 						if(curEnt.getLowerCount() > 0) {
-							stkId.push(Pair{-2, Index(0,0)});
+							// スタックポップの目印を付ける
+							stkId.push(ToSearch{-2, Index(0,0)});
 							curWidth /= 2;
 
 							// 手持ちリストをOctave個のリストに分類(重複あり)にしてスタックに積む
-							Index lowerCenterId[this_t::N_LayerSize];
+							constexpr auto LSize = this_t::N_LayerSize;
+							Index lowerCenterId[LSize];
 							Dim_t::CalcLowerCenterId(lowerCenterId, p.center, curWidth);
 							// 先に枝が有効かどうか確認
 							int tcount = 0;
-							for(int i=0 ; i<this_t::N_LayerSize ; i++) {
-								int idx = p.toProc*this_t::N_LayerSize+1+i;		// 子ノードのインデックス
-								if(hasEntry(idx)) {
-									auto& ent = getEntry(idx);
-									if(!ent.isEmpty()) {
-										Dim_t::Classify(ve, lowerCenterId[i], [i, idx2=idx, &lowerCenterId, &stkId](const VolumeEntry& /*ve*/, int /*idx*/){
-											stkId.push(Pair{idx2, lowerCenterId[i]});
-										});
+							for(int i=0 ; i<LSize ; i++) {
+								const int childIdx = p.cellId*LSize+1+i;		// 子ノードのインデックス
+								if(hasEntry(childIdx)) {
+									if(!getEntry(childIdx).isEmpty()) {
+										Dim_t::Classify(
+											ve,
+											p.center,
+											[i, childIdx, &lowerCenterId, &stkId](const VolumeEntry& /*ve*/, const int idx){
+												if(idx == i)
+													stkId.push(ToSearch{childIdx, lowerCenterId[idx]});
+											}
+										);
 										++tcount;
 										continue;
 									}
@@ -158,28 +166,19 @@ namespace beat {
 					uint32_t count = 0;
 					typename this_t::Mapper_t::Entry::CellStack stk;		// 現在持っているオブジェクト集合
 
-					struct Pair {
-						int	toProc;			// これから処理する枝ノード. 負数は一段上に上がる
-						Index center;		// 中心座標(ノードが負数の時は無効)
-
-						Pair(const int toproc, const Index cent):
-							toProc(toproc),
-							center(cent)
-						{}
-					};
-					std::stack<Pair> stkId;
-
+					ToSearchStk stkId;
 					int curWidth = this_t::Mapper_t::N_Width/2;		// 現在の走査幅 (常に2の乗数)
 
 					// ルートノードをプッシュ
-					stkId.push(Pair(0, Index(curWidth, curWidth)));
+					stkId.push(ToSearch{0, Index(curWidth, curWidth)});
 
 					while(!stkId.empty()) {
 						auto p = stkId.top();
 						stkId.pop();
-						if(p.toProc < 0) {
-							if(p.toProc == -2) {
-								stk.popBlock();		// オブジェクト集合の状態を1つ戻す
+						if(p.cellId < 0) {
+							if(p.cellId == -2) {
+								// 階層を一段上がる
+								stk.popBlock();
 								curWidth *= 2;
 								if(curWidth == 0)
 									curWidth = 1;
@@ -187,7 +186,7 @@ namespace beat {
 							continue;
 						}
 
-						const auto& curEnt = getEntry(p.toProc);
+						const auto& curEnt = getEntry(p.cellId);
 						// 判定を行うかの判断 (assert含む)
 						if(!curEnt.isNodeEmpty()) {
 							count += static_cast<const this_t&>(*this)._doCollision(stk, curEnt, ntf);
@@ -199,28 +198,33 @@ namespace beat {
 
 						// 下に枝があればそれを処理
 						if(curEnt.getLowerCount() > 0) {
-							stkId.push(Pair(-2, Index(0,0)));
+							// スタックポップの目印
+							stkId.push(ToSearch{-2, Index(0,0)});
 							curWidth /= 2;
+
 							// 手持ちリストをOctave個のリストに分類(重複あり)にしてスタックに積む
-							Index		lowerCenterId[this_t::N_LayerSize];
-							bool		bWrite[this_t::N_LayerSize] = {};
+							constexpr auto LSize = this_t::N_LayerSize;
+							Index		lowerCenterId[LSize];
+							bool		bWrite[LSize] = {};
 							Dim_t::CalcLowerCenterId(lowerCenterId, p.center, curWidth);
 							// 先に枝が有効かどうか確認
-							int tcount = 0;
-							for(int i=0 ; i<this_t::N_LayerSize ; i++) {
-								int idx = p.toProc*this_t::N_LayerSize+1+i;		// 子ノードのインデックス
-								if(hasEntry(idx)) {
-									auto& ent = getEntry(idx);
-									if(!ent.isEmpty()) {
-										stkId.push(Pair(idx, lowerCenterId[i]));
-										++tcount;
+							for(int i=0 ; i<LSize ; i++) {
+								const int childIdx = p.cellId*LSize+1+i;		// 子ノードのインデックス
+								if(hasEntry(childIdx)) {
+									if(!getEntry(childIdx).isEmpty()) {
+										stkId.push(ToSearch{childIdx, lowerCenterId[i]});
 										bWrite[i] = true;
 										continue;
 									}
 								}
 							}
 							stk.template classify<Dim_t>(bWrite, p.center);
-							D_Assert0(tcount>0);
+#ifdef DEBUG
+							bool valid = false;
+							for(auto b : bWrite)
+								valid |= b;
+							Assert0(valid);
+#endif
 						} else
 							stk.popBlock();		// オブジェクト集合の状態を1つ戻す
 					}
