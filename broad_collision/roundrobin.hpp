@@ -45,18 +45,6 @@ namespace beat {
 			// 境界ボリュームを取得する為の関数
 			GetBV_SP<BVolume>	_getBV;
 
-			template <class CB>
-			static bool _Proc(const Node& nd0, const Node& nd1, CB&& cb) {
-				// 属性マスクによる判定
-				if(nd0.mask & nd1.mask) {
-					// 境界ボリュームチェック
-					if(nd0.volume.hit(nd1.volume)) {
-						cb(nd0.pCol, nd1.pCol);
-						return true;
-					}
-				}
-				return false;
-			}
 			static Type _DetectType(const CMask m) {
 				return (m & 0x80000000) ? TypeB : TypeA;
 			}
@@ -110,9 +98,10 @@ namespace beat {
 				\param[in] mask		コリジョンマスク値
 				\param[in] bv		判定対象のバウンディングボリューム
 				\param[in] cb		コールバック関数(spn::SHandle)
+				\return				衝突したペア数(境界ボリューム含まず)
 			*/
 			template <class CB>
-			void checkCollision(const CMask mask, const BVolume& bv, CB&& cb) {
+			uint32_t checkCollision(const CMask mask, const BVolume& bv, CB&& cb) {
 				const auto fnChk = [mask, &bv, cb=std::forward<CB>(cb)](const auto& nd) {
 					for(const auto& obj : nd) {
 						if(mask & obj.mask) {
@@ -121,44 +110,64 @@ namespace beat {
 						}
 					}
 				};
+				const auto &nodeA = _node[TypeA],
+							& nodeB = _node[TypeB];
+				uint32_t count = nodeA.size();
 				if(_DetectType(mask) == TypeA) {
+					count += nodeB.size();
 					// TypeBと判定
-					fnChk(_node[TypeB]);
+					fnChk(nodeB);
 				}
 				// TypeAと判定
-				fnChk(_node[TypeA]);
+				fnChk(nodeA);
+				return count;
 			}
 			//! リストに溜め込まずに直接コールバックを呼ぶ
 			/*!
 				\param[in] ac_t		累積時間
 				\param[in] cb		コールバック関数(SHandle,SHandle)
-				\return				衝突したペア数
+				\return				衝突したペア数(境界ボリューム含まず)
 			*/
 			template <class CB>
-			int broadCollision(CB&& cb) {
-				int count = 0;
-				if(!_node[TypeA].empty()) {
-					const auto itrB_a = _node[TypeA].begin(),
-								itrE_a = _node[TypeA].end();
+			uint32_t broadCollision(CB&& cb) {
+				const auto proc = [](const Node& nd0, const Node& nd1, const auto& cb) {
+					// 属性マスクによる判定
+					if(nd0.mask & nd1.mask) {
+						// 境界ボリュームチェック
+						if(nd0.volume.hit(nd1.volume)) {
+							cb(nd0.pCol, nd1.pCol);
+						}
+					}
+				};
+				uint32_t count = 0;
+				const auto &nodeA = _node[TypeA],
+							& nodeB = _node[TypeB];
+				const uint32_t szA = nodeA.size(),
+								szB = nodeB.size();
+				if(szA > 0) {
+					const auto itrB_a = nodeA.begin(),
+								itrE_a = nodeA.end();
 					{
 						const auto itrE_a1 = std::prev(itrE_a, 1);
 						// A -> A
 						for(auto itr=itrB_a ; itr!=itrE_a1 ; ++itr) {
 							const Node& nodeA = *itr;
 							for(auto itr2=itr+1 ; itr2!=itrE_a ; ++itr2) {
-								count += this->_Proc(nodeA, *itr2, cb);
+								proc(nodeA, *itr2, cb);
 							}
+							count += (itrE_a - itr+1);
 						}
 					}
 					// A -> B
-					if(!_node[TypeB].empty()) {
-						const auto itrB_b = _node[TypeB].begin(),
-						itrE_b = _node[TypeB].end();
+					if(!nodeB.empty()) {
+						count += szA * szB;
+						const auto itrB_b = nodeB.begin(),
+						itrE_b = nodeB.end();
 
 						for(auto itr=itrB_a ; itr!=itrE_a ; ++itr) {
 							const auto& nodeA = *itr;
 							for(auto itr2=itrB_b ; itr2!=itrE_b ; ++itr2)
-								count += this->_Proc(nodeA, *itr2, cb);
+								proc(nodeA, *itr2, cb);
 						}
 					}
 				}
