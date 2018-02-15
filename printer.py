@@ -2,12 +2,14 @@
 # GDB用のpretty-printer
 import math
 import frea.printer
+import spine.printer
 import re
 import gdb
 
 def buildPrinter(obj):
-    obj.pretty_printers.append(frea.printer.Lookup)
     obj.pretty_printers.append(Lookup)
+    frea.printer.buildPrinter(obj)
+    spine.printer.buildPrinter(obj)
 
 Re_Beat = re.compile("^beat::(.+)$")
 def Lookup(val):
