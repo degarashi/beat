@@ -63,6 +63,7 @@ namespace beat {
 
 			virtual void im_transform(void* dst, const AMat32& m) const = 0;
 			virtual std::ostream& im_print(std::ostream& os) const = 0;
+			virtual ~IModel() {}
 		};
 
 		//! TにIModelインタフェースを付加
