@@ -88,6 +88,7 @@ namespace beat {
 	struct CMBase {
 		using user_t = UD;
 		using cb_t = std::function<void (user_t&, int)>;
+		virtual ~CMBase() {}
 		virtual user_t& refUserData() const noexcept = 0;
 		virtual void getCollision(const cb_t& cb) const = 0;
 		virtual void getEndCollision(const cb_t& cb) const = 0;
