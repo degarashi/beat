@@ -29,6 +29,7 @@ namespace beat {
 		Model_base(const T& t):
 			T(t)
 		{}
+		virtual ~Model_base() {}
 		virtual bool im_refresh(Time_t /*t*/) const override {
 			return true;
 		}
