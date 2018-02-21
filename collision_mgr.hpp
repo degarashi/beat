@@ -47,6 +47,7 @@ namespace beat {
 		template <class BCId, class Hist>
 		struct IColMgr {
 			using CBHist = std::function<void (const Hist&)>;
+			virtual ~IColMgr() {}
 			virtual Time_t getTime() const noexcept = 0;
 			virtual void iterateHistCur(int idx, const CBHist& cb) const = 0;
 			virtual void iterateHistPrev(int idx, const CBHist& cb) const = 0;
@@ -105,6 +106,7 @@ namespace beat {
 		using mdl_sp = std::shared_ptr<mdl_t>;
 		using cmbase_sp = CMBase_SP<user_t>;
 
+		virtual ~IColMgr() {}
 		virtual Time_t getTime() const noexcept = 0;
 		virtual void selfCheck() const = 0;
 		virtual cmbase_sp addCol(CMask mask, const mdl_sp& mdl, const user_t& ud) = 0;
