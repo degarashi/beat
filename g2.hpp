@@ -1,6 +1,7 @@
 #pragma once
 #include "spine/optional.hpp"
 #include "frea/matrix.hpp"
+#include <vector>
 
 namespace beat {
 	using frea::Vec2;

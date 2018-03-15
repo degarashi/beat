@@ -42,6 +42,7 @@ namespace beat {
 		};
 	}
 }
+#include <functional>
 namespace std {
 	template <class Idx>
 	struct hash<beat::ntree::VolumeEntry<Idx>> {

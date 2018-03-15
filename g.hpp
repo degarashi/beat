@@ -1,5 +1,6 @@
 #pragma once
 #include "frea/vector.hpp"
+#include <vector>
 
 namespace beat {
 	struct Edge : std::pair<int,int> {
