@@ -4,7 +4,7 @@ project(beat)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -ggdb3 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O0 -ggdb3 -std=c++14 -Wall -Wextra -ftemplate-depth=1024")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -ggdb3 -std=c++17 -Wall -Wextra -ftemplate-depth=1024")
 add_definitions(-DSSE=${SSE})
 include_directories(.)
 # デバッグビルドの際はGLibのデバッグモードをONにする
