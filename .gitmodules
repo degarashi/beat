@@ -1,9 +1,9 @@
 [submodule "lubee"]
 	path = lubee
-	url = /home/degarashi/Encbox/git_repo/lubee
+	url = ../lubee
 [submodule "frea"]
 	path = frea
-	url = /home/degarashi/Encbox/git_repo/frea
+	url = ../frea
 [submodule "spine"]
 	path = spine
-	url = /home/degarashi/Encbox/git_repo/spine
+	url = ../spine
