@@ -59,10 +59,14 @@ namespace beat {
 				void moveFwd2D(float speed);
 				//! サイド移動(XZ平面限定)
 				void moveSide2D(float speed);
+				//! 上方移動(XZ平面限定)
+				void moveUp2D(float speed);
 				//! 前方への移動(軸フリー)
 				void moveFwd3D(float speed);
 				//! サイド移動(軸フリー)
 				void moveSide3D(float speed);
+				//! 上方移動(軸フリー)
+				void moveUp3D(float speed);
 
 				//! 方向転換(軸指定)
 				void turnAxis(const AVec3& axis, RadF rad);

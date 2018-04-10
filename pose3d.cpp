@@ -70,11 +70,17 @@ namespace beat {
 			vX.normalize();
 			addOffset(vX * speed);
 		}
+		void Pose::moveUp2D(const float speed) {
+			addOffset(Vec3(0,speed,0));
+		}
 		void Pose::moveFwd3D(const float speed) {
 			addOffset(getDir() * speed);
 		}
 		void Pose::moveSide3D(const float speed) {
 			addOffset(getRight() * speed);
+		}
+		void Pose::moveUp3D(const float speed) {
+			addOffset(getUp() * speed);
 		}
 		void Pose::turnAxis(const AVec3& axis, const RadF ang) {
 			auto q = getRotation();
