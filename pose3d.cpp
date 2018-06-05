@@ -29,6 +29,9 @@ namespace beat {
 		Pose::Pose(const AVec3& pos, const AQuat& rot, const AVec3& sc) {
 			setAll(pos, rot, sc);
 		}
+		Pose::Pose(const Mat4& m):
+			Pose(frea::AMat4(m).convert<4,3>())
+		{}
 		Pose::Pose(const AMat43& m) {
 			const auto ap = frea::AffineParts<float>::Decomp(m);
 			setAll(ap.offset, ap.rotation, ap.scale);

@@ -17,6 +17,7 @@ namespace beat {
 				using Vec3 = frea::Vec3;
 				using AVec3 = frea::AVec3;
 				using AMat43 = frea::Mat_t<float, 4, 3, true>;
+				using Mat4 = frea::Mat4;
 				using RadF = frea::RadF;
 				using Ac_OP = spi::Optional<uint32_t>;
 				#define SEQ \
@@ -42,6 +43,7 @@ namespace beat {
 				Pose(const Pose& p) = default;
 				Pose(const AVec3& pos, const AQuat& rot, const AVec3& sc);
 				Pose(const AMat43& m);
+				Pose(const Mat4& m);
 				void identity();
 
 				AVec3 getUp() const;
