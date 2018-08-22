@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
 project(beat)
 
+set(CXX_VERSION 17)
+include(lubee/cxx_options.cmake)
+string(CONCAT CMAKE_CXX_FLAGS " -Wno-c99-extensions")
+string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-zero-variadic-macro-arguments")
+string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-anonymous-struct")
+string(CONCAT CMAKE_CXX_FLAGS " -Wno-nested-anon-types")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -ggdb3 -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -ggdb3 -std=c++17 -Wall -Wextra -ftemplate-depth=1024")
 add_definitions(-DSSE=${SSE})
 include_directories(.)
-# デバッグビルドの際はGLibのデバッグモードをONにする
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-D_GLIBCXX_DEBUG)
-endif()
 aux_source_directory(. LIBSRC_FILE)
 aux_source_directory(./broad_collision/ntree NTREE_FILE)
 add_library(beat SHARED ${LIBSRC_FILE} ${NTREE_FILE})
