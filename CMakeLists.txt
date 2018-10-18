@@ -10,9 +10,17 @@ string(CONCAT CMAKE_CXX_FLAGS " -Wno-nested-anon-types")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_definitions(-DSSE=${SSE})
-include_directories(.)
-aux_source_directory(. LIBSRC_FILE)
-aux_source_directory(./broad_collision/ntree NTREE_FILE)
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
+)
+aux_source_directory(
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	LIBSRC_FILE
+)
+aux_source_directory(
+	${CMAKE_CURRENT_SOURCE_DIR}/src/broad_collision/ntree
+	NTREE_FILE
+)
 add_library(beat SHARED ${LIBSRC_FILE} ${NTREE_FILE})
 set_target_properties(beat PROPERTIES VERSION 0.0.1 SOVERSION 0)
 install(TARGETS beat LIBRARY DESTINATION lib)
@@ -30,9 +38,9 @@ if(NOT without-unittest)
 		${GTEST_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
 	)
-	aux_source_directory(tests/common COMMON)
+	aux_source_directory(src/tests/common COMMON)
 	# testsディレクトリ以下のソースが対象
-	aux_source_directory(tests TEST_SRC)
+	aux_source_directory(src/tests TEST_SRC)
 	foreach(SRC IN LISTS TEST_SRC)
 		list(FIND COMMON ${SRC} OUTPUT)
 		if(${OUTPUT} LESS 0)
