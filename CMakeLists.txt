@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 project(beat)
 
+set(COMMON_COMPILE lubee/common_compile)
 set(CXX_VERSION 17)
-include(lubee/cxx_options.cmake)
+include(${COMMON_COMPILE}/cxx_options.cmake)
+include(${COMMON_COMPILE}/compile_commands.cmake)
+include(${COMMON_COMPILE}/aux.cmake)
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-c99-extensions")
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-zero-variadic-macro-arguments")
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-anonymous-struct")
@@ -29,15 +32,8 @@ install(TARGETS beat LIBRARY DESTINATION lib)
 if(NOT without-unittest)
 	enable_testing()
 
-	include(aux.cmake)
-	find_package(GTest REQUIRED)
-	include_directories(${GTEST_INCLUDE_DIRS})
-	set(TESTEXE_LIB
-		beat
-		${GTEST_MAIN_LIBRARIES}
-		${GTEST_LIBRARIES}
-		${CMAKE_THREAD_LIBS_INIT}
-	)
+	LoadGTestLibs(LIBS)
+	set(TESTEXE_LIB beat ${LIBS})
 	aux_source_directory(src/tests/common COMMON)
 	# testsディレクトリ以下のソースが対象
 	aux_source_directory(src/tests TEST_SRC)
@@ -45,7 +41,7 @@ if(NOT without-unittest)
 		list(FIND COMMON ${SRC} OUTPUT)
 		if(${OUTPUT} LESS 0)
 			GetFilename(${SRC}, SRCNAME)
-			AddTest(${SRCNAME} "${SRC};${COMMON}" "${TESTEXE_LIB}")
+			AddTest(${PROJECT_NAME} ${SRCNAME} "${SRC};${COMMON}" "${TESTEXE_LIB}")
 		endif()
 	endforeach()
 endif()
