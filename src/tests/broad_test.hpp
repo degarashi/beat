@@ -90,6 +90,6 @@ namespace beat {
 			ntree::DualNTree<ntree::g2::Dim, ntree::ArrayMapper, 5>,
 			ntree::DualNTree<ntree::g2::Dim, ntree::HashMapper, 5>
 		>;
-		TYPED_TEST_CASE(BroadCollision, BroadTypes);
+		TYPED_TEST_SUITE(BroadCollision, BroadTypes);
 	}
 }

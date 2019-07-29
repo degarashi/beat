@@ -19,7 +19,7 @@ namespace beat {
 											AABB,
 											Triangle,
 											Convex>;
-		TYPED_TEST_CASE(BVolume2D, BVolume2DTL);
+		TYPED_TEST_SUITE(BVolume2D, BVolume2DTL);
 		// BVolume, BBoxのテスト
 		TYPED_TEST(BVolume2D, General) {
 			using Shape = TypeParam;

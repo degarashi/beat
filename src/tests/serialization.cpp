@@ -19,7 +19,7 @@ namespace beat {
 			Triangle,
 			Convex
 		>;
-		TYPED_TEST_CASE(SerializationG2, STypes);
+		TYPED_TEST_SUITE(SerializationG2, STypes);
 		TYPED_TEST(SerializationG2, General) {
 			using Mdl = Model<TypeParam>;
 			Mdl shape;
@@ -30,7 +30,7 @@ namespace beat {
 		using OtherTypes = ::testing::Types<
 			Pose
 		>;
-		TYPED_TEST_CASE(Serialization, OtherTypes);
+		TYPED_TEST_SUITE(Serialization, OtherTypes);
 		TYPED_TEST(Serialization, General) {
 			TypeParam obj;
 			this->genShape(obj);

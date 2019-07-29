@@ -13,7 +13,7 @@ namespace beat {
 												Segment,
 												Triangle,
 												Convex>;
-		TYPED_TEST_CASE(TfNode2D, TfNodeTypeList);
+		TYPED_TEST_SUITE(TfNode2D, TfNodeTypeList);
 
 		// 単一ノードによる姿勢変換テスト
 		TYPED_TEST(TfNode2D, Transform) {

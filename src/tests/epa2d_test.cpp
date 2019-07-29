@@ -18,7 +18,7 @@ namespace beat {
 												AABB,
 												Triangle,
 												Convex>;
-		TYPED_TEST_CASE(Epa2D, Epa2DTypeList);
+		TYPED_TEST_SUITE(Epa2D, Epa2DTypeList);
 		TYPED_TEST(Epa2D, Epa) {
 			using ShapeM = Model<TypeParam>;
 			ShapeM c[2];
