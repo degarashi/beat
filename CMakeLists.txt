@@ -5,7 +5,7 @@ set(COMMON_COMPILE lubee/common_compile)
 include(${COMMON_COMPILE}/cxx_setup.cmake)
 include(${COMMON_COMPILE}/compile_commands.cmake)
 include(${COMMON_COMPILE}/aux.cmake)
-SetupCXX(17)
+SetupCXX(17 CompileCommands)
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-c99-extensions")
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-zero-variadic-macro-arguments")
 string(CONCAT CMAKE_CXX_FLAGS " -Wno-gnu-anonymous-struct")
@@ -23,6 +23,11 @@ aux_source_directory(
 aux_source_directory(
 	${CMAKE_CURRENT_SOURCE_DIR}/src/broad_collision/ntree
 	NTREE_FILE
+)
+list(
+	APPEND CPP_FILES
+	${NTREE_FILE}
+	${LIBSRC_FILE}
 )
 add_library(beat SHARED ${LIBSRC_FILE} ${NTREE_FILE})
 set_target_properties(beat PROPERTIES VERSION 0.0.1 SOVERSION 0)
@@ -44,4 +49,10 @@ if(NOT without-unittest)
 			AddTest(${PROJECT_NAME} ${SRCNAME} "${SRC};${COMMON}" "${TESTEXE_LIB}")
 		endif()
 	endforeach()
+	list(
+		APPEND CPP_FILES
+		${COMMON}
+		${TEST_SRC}
+	)
+	DefineCompDB(CPP_FILES)
 endif()
